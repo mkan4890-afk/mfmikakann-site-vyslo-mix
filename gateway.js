@@ -260,6 +260,29 @@ const server = http.createServer((req, res) => {
     return res.end(JSON.stringify({ name: "VYSLO MIX", version: "1.0.0", apps: Object.keys(APPS) }));
   }
 
+  // デバッグ: チャットサーバーの状態を確認
+  if (pathname === "/debug-chat") {
+    const http = require("http");
+    const req2 = http.get("http://127.0.0.1:8003/", { timeout: 3000 }, (r) => {
+      let body = "";
+      r.on("data", (c) => body += c);
+      r.on("end", () => {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ status: "ok", code: r.statusCode, body: body.substring(0, 200) }));
+      });
+    });
+    req2.on("error", (e) => {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "error", message: e.message }));
+    });
+    req2.on("timeout", () => {
+      req2.destroy();
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ status: "timeout" }));
+    });
+    return;
+  }
+
   if (pathname.startsWith("/__x/")) { handleExt(req, res).catch((e) => { console.error("[ext]", e.message, req.url); if (!res.headersSent) res.writeHead(502); res.end(); }); return; }
   if (pathname.startsWith("/__idsync/")) {
     return handleIdSync(req, res, pathname);
