@@ -1,0 +1,419 @@
+/* ════════════════════════════════════════════════════════════
+   v2.6 追加・修正分
+   ・いいねボタン (動画 / ショートで共通の見た目と動き)
+   ・チャンネルのアイコン / 名前を押したときの手ごたえ
+   ・関連動画: チャンネル名・再生回数・公開日
+   ・関連動画の開閉ボタン (小さく右下)
+   ・サイドバーの余白
+   ・「次の動画へ」ON/OFF
+   ・ミニプレイヤーのドラッグ
+   ・ショート: コメント欄と動画情報が重ならないように / 保存・ダウンロード
+   ・ダウンロード画面
+   ════════════════════════════════════════════════════════════ */
+
+/* ── いいね (共通) ───────────────────────────────────── */
+.vy-like-btn { user-select: none; -webkit-tap-highlight-color: transparent; }
+.vy-like-btn .vy-like-ic { width: 18px; height: 18px; flex-shrink: 0; transition: transform .18s ease, fill .15s ease; fill: none; }
+.vy-like-btn.is-liked .vy-like-ic { fill: currentColor; }
+.vy-like-btn .vy-like-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.vy-like-btn.vy-pop .vy-like-ic { animation: vy-like-pop .32s ease; }
+@keyframes vy-like-pop { 0% { transform: scale(1); } 40% { transform: scale(1.32) rotate(-10deg); } 100% { transform: scale(1); } }
+.vy-like-btn:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+
+/* 動画ページ */
+body.page-watch .watch-like-btn.vy-like-btn {
+  display: inline-flex; align-items: center; gap: .45rem; flex-shrink: 0;
+  height: 36px; padding: 0 .95rem; border-radius: 999px; cursor: pointer;
+  font: 600 .84rem/1 inherit; font-family: inherit;
+  color: #ede9fe; background: rgba(139, 92, 246, .14);
+  border: 1px solid rgba(192, 132, 252, .3);
+  transition: background .15s, border-color .15s, color .15s, transform .1s;
+}
+body.page-watch .watch-like-btn.vy-like-btn[hidden] { display: none !important; }
+body.page-watch .watch-like-btn.vy-like-btn:hover { background: rgba(139, 92, 246, .28); border-color: rgba(232, 121, 249, .55); }
+body.page-watch .watch-like-btn.vy-like-btn:active { transform: scale(.96); }
+body.page-watch .watch-like-btn.vy-like-btn.is-liked {
+  color: #fff; background: linear-gradient(135deg, #7c3aed, #c026d3); border-color: transparent;
+}
+[data-theme="light"] body.page-watch .watch-like-btn.vy-like-btn { color: #5b21b6; background: rgba(139, 92, 246, .08); }
+[data-theme="light"] body.page-watch .watch-like-btn.vy-like-btn.is-liked { color: #fff; background: linear-gradient(135deg, #7c3aed, #c026d3); }
+
+/* ショート (押せるようにする) */
+body.page-shorts .sf-like.vy-like-btn { cursor: pointer !important; font-family: inherit; }
+body.page-shorts .sf-like.vy-like-btn:hover { background: rgba(168, 85, 247, .32) !important; }
+body.page-shorts .sf-like.vy-like-btn:active { transform: scale(.94); }
+body.page-shorts .sf-like.vy-like-btn .vy-like-ic { width: 20px; height: 20px; }
+body.page-shorts .sf-like.vy-like-btn .vy-like-num { font-size: .66rem; }
+body.page-shorts .sf-like.vy-like-btn.is-liked {
+  background: linear-gradient(135deg, #7c3aed, #c026d3) !important; border-color: transparent !important; color: #fff !important;
+}
+body.page-shorts .sf-like.vy-like-btn.is-liked svg { fill: currentColor; }
+
+/* ── チャンネル (アイコン / 名前) を押したときの手ごたえ ───── */
+.vy-ch-press, body.page-watch .channel-link, body.page-shorts .sf-ch-link, .comment-author-link {
+  -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.comment-avatar-wrap { display: block; flex-shrink: 0; border-radius: 50%; text-decoration: none; transition: transform .1s, box-shadow .15s; }
+.comment-avatar-wrap:hover { box-shadow: 0 0 0 2px rgba(192, 132, 252, .55); }
+.comment-avatar-wrap:active { transform: scale(.9); box-shadow: 0 0 0 3px rgba(232, 121, 249, .75); }
+.comment-avatar-wrap img, .comment-avatar-wrap .comment-avatar { display: block; }
+.comment-avatar-wrap:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+
+body.page-watch .channel-link img, body.page-watch .channel-link .channel-avatar,
+body.page-shorts .sf-ch-link .sf-ch-avatar,
+body.page-watch .related-ch-icon-wrap { transition: transform .1s, box-shadow .15s; border-radius: 50%; }
+body.page-watch .channel-link:hover img, body.page-watch .channel-link:hover .channel-avatar,
+body.page-shorts .sf-ch-link:hover .sf-ch-avatar { box-shadow: 0 0 0 2px rgba(192, 132, 252, .55); }
+body.page-watch .channel-link:active img, body.page-watch .channel-link:active .channel-avatar,
+body.page-shorts .sf-ch-link:active .sf-ch-avatar,
+body.page-watch .related-ch-channel-link:active .related-ch-icon-wrap { transform: scale(.9); box-shadow: 0 0 0 3px rgba(232, 121, 249, .75); }
+body.page-watch .channel-link:active .channel-name, body.page-watch .channel-link:active #channelName,
+body.page-shorts .sf-ch-link:active .sf-ch-name,
+body.page-watch .related-ch-channel-link:active .related-channel { color: #e879f9 !important; }
+body.page-watch .related-ch-channel-link:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 1px; }
+
+/* ── 関連動画の情報 (チャンネル名・再生回数・公開日) ───────── */
+body.page-watch .related-info { gap: .18rem; }
+body.page-watch .related-channel-row { margin-top: .1rem; }
+body.page-watch .related-ch-channel-link { flex: 0 1 auto; max-width: 100%; }
+body.page-watch .related-ch-icon-wrap { display: inline-flex; align-items: center; }
+body.page-watch .related-ch-placeholder { display: block; }
+body.page-watch .related-channel { display: block; flex: 0 1 auto; }
+body.page-watch .related-views {
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+body.page-watch .related-sep { margin: 0 .3em; opacity: .7; }
+@media (max-width: 1100px) and (min-width: 761px) {
+  /* 横並びの狭いカードでもチャンネル名は必ず見えるように (アイコンだけ隠す) */
+  body.page-watch .related-channel, body.page-watch .related-views { display: block !important; }
+}
+
+/* ── 関連動画の開閉ボタン: 小さく右下 ───────────────────── */
+body.page-watch .sidebar-fab {
+  right: 12px !important; bottom: 12px !important; left: auto !important; top: auto !important;
+  width: 36px !important; height: 36px !important; border-radius: 10px !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .35) !important; opacity: .92;
+}
+body.page-watch .sidebar-fab svg { width: 16px !important; height: 16px !important; }
+body.page-watch .sidebar-fab:hover { opacity: 1; transform: translateY(-1px); }
+@media (max-width: 760px) {
+  body.page-watch .sidebar-fab { right: 10px !important; bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important; width: 34px !important; height: 34px !important; }
+}
+
+/* ── サイドバー: 上の何もない領域を作らない ─────────────── */
+.app-sidebar { overscroll-behavior: contain; }
+.app-sidebar > .sidebar-nav { overscroll-behavior: contain; scroll-padding-top: 0; }
+.app-sidebar > .sidebar-nav > :first-child { margin-top: 0 !important; }
+
+/* ── 「次の動画へ」ON/OFF (再生・自動再生と見分けやすいチップ) ─ */
+body.page-watch .vctrls-btn.vc-an-chip {
+  display: inline-flex; align-items: center; gap: .32rem; width: auto !important;
+  height: 26px; padding: 0 .3rem 0 .55rem !important; margin: 0 .15rem;
+  border-radius: 6px; opacity: 1 !important; line-height: 1;
+  color: rgba(255, 255, 255, .78); background: rgba(255, 255, 255, .08);
+  border: 1px dashed rgba(255, 255, 255, .38);
+  font: 600 .7rem/1 inherit; font-family: inherit; white-space: nowrap;
+  transition: background .15s, border-color .15s, color .15s;
+}
+body.page-watch .vc-an-chip svg { flex-shrink: 0; }
+body.page-watch .vc-an-state {
+  display: inline-block; min-width: 2.4em; padding: 3px 5px; border-radius: 4px; text-align: center;
+  font-size: .6rem; font-weight: 800; letter-spacing: .04em;
+  background: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .8);
+}
+body.page-watch .vctrls-btn.vc-an-chip.active {
+  color: #fff; background: rgba(16, 185, 129, .22); border: 1px solid rgba(52, 211, 153, .75);
+}
+body.page-watch .vc-an-chip.active .vc-an-state { background: #10b981; color: #fff; }
+body.page-watch .vctrls-btn.vc-an-chip:hover { border-color: #fff; }
+body.page-watch .vctrls-btn.vc-an-chip:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+@media (max-width: 640px) {
+  body.page-watch .vc-an-label { display: none; }
+  body.page-watch .vctrls-btn.vc-an-chip { padding: 0 .25rem 0 .35rem !important; }
+}
+
+/* ── ミニプレイヤー: ドラッグ ────────────────────────────── */
+html.vy-mini-on .vy-mini-hit, html.vy-mini-on .vy-mini-meta { touch-action: none; cursor: grab; }
+html.vy-mini-on body.page-watch #playerWrap.vy-mini-dragging { cursor: grabbing; animation: none !important; transition: none !important; box-shadow: 0 24px 60px rgba(0, 0, 0, .7) !important; opacity: .96; }
+html.vy-mini-on body.page-watch #playerWrap.vy-mini-dragging * { cursor: grabbing !important; }
+html.vy-mini-on body.page-watch #playerWrap.vy-mini-snap { transition: left .24s cubic-bezier(.22, .8, .24, 1), top .24s cubic-bezier(.22, .8, .24, 1) !important; animation: none !important; }
+html.vy-mini-on { user-select: auto; }
+html.vy-mini-on body.page-watch #playerWrap.vy-mini-dragging { user-select: none; }
+
+/* ── 説明欄のハッシュタグ ───────────────────────────────── */
+.vy-hashtag { color: #e879f9; text-decoration: none; font-weight: 600; }
+.vy-hashtag:hover { text-decoration: underline; }
+[data-theme="light"] .vy-hashtag { color: #a21caf; }
+
+/* ── プレイリスト保存の見出し (動画 / ショート共通) ─────── */
+.watch-pl-head { padding: .45rem 1rem .5rem; font-size: .8rem; font-weight: 700; color: var(--vy-muted); border-bottom: 1px solid var(--vy-border); margin-bottom: .3rem; }
+
+/* ショートでも同じプレイリストメニュー */
+body.page-shorts .sf-pl-wrap { position: relative; display: flex; }
+body.page-shorts .sf-pl-popup {
+  position: absolute; top: 50%; right: calc(100% + 10px); left: auto; transform: translateY(-50%);
+  z-index: 400; min-width: 240px; max-width: 290px; max-height: 60vh; overflow-y: auto;
+  padding: .4rem 0; border-radius: 12px;
+  background: var(--vy-panel-2); border: 1px solid var(--vy-border-2); box-shadow: var(--vy-shadow);
+  color: var(--vy-text);
+}
+body.page-shorts .sf-pl-popup[hidden] { display: none !important; }
+body.page-shorts .sf-pl-popup .watch-pl-row { display: flex; align-items: center; gap: .7rem; padding: .5rem 1rem; cursor: pointer; user-select: none; }
+body.page-shorts .sf-pl-popup .watch-pl-row:hover { background: rgba(139, 92, 246, .18); }
+body.page-shorts .sf-pl-popup .watch-pl-check { width: 15px; height: 15px; accent-color: #a855f7; flex-shrink: 0; }
+body.page-shorts .sf-pl-popup .watch-pl-name { flex: 1; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.page-shorts .sf-pl-popup .watch-pl-cnt { font-size: .72rem; color: var(--vy-muted); }
+body.page-shorts .sf-pl-popup .watch-pl-hint { padding: .6rem 1rem; font-size: .82rem; color: var(--vy-muted); }
+body.page-shorts .sf-pl-popup .watch-pl-divider { height: 1px; background: var(--vy-border); margin: .35rem 0; }
+body.page-shorts .sf-pl-popup .watch-pl-new-btn {
+  display: flex; align-items: center; gap: .55rem; width: 100%; padding: .55rem 1rem;
+  background: transparent; border: 0; color: #e879f9; font: inherit; font-size: .84rem; cursor: pointer; text-align: left;
+}
+body.page-shorts .sf-pl-popup .watch-pl-new-btn:hover { background: rgba(139, 92, 246, .18); }
+body.page-shorts #sfPlBtn.active { background: rgba(168, 85, 247, .38) !important; border-color: rgba(232, 121, 249, .6) !important; }
+body.page-shorts #sfDlBtn span, body.page-shorts #sfPlBtn span { font-size: .58rem; white-space: nowrap; }
+@media (max-width: 720px) {
+  body.page-shorts .sf-pl-popup {
+    position: fixed; top: auto; right: 8px; left: 8px; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    transform: none; max-width: none; z-index: 260;
+  }
+}
+
+/* ── ショート: コメント欄と動画情報が重ならないように ───── */
+@media (min-width: 761px) {
+  /* コメント欄は動画の右側に (動画情報は左側なので重ならない) */
+  body.page-shorts .sf-comments-panel { order: 2; }
+  body.page-shorts .sf-root.sf-cp-open .sf-top { right: 340px; }
+  body.page-shorts .sf-root.sf-cp-open .sf-info { width: min(340px, calc((100vw - 340px - 100%) / 2 - 40px)); }
+}
+/* コメント欄を開いて横の空きが足りないときは、動画の下側に重ねる */
+@media (min-width: 761px) and (max-width: 1280px) {
+  body.page-shorts .sf-root.sf-cp-open .sf-info {
+    right: calc(60px + 1.1rem + 12px); left: 12px; bottom: 44px; width: auto; color: #fff;
+  }
+  body.page-shorts .sf-root.sf-cp-open .sf-info .sf-overlay-meta { color: rgba(255, 255, 255, .8) !important; }
+  body.page-shorts .sf-root.sf-cp-open .sf-info .sf-ch-link,
+  body.page-shorts .sf-root.sf-cp-open .sf-info .sf-overlay-title { color: #fff !important; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); }
+  body.page-shorts .sf-root.sf-cp-open .sf-info-desc,
+  body.page-shorts .sf-root.sf-cp-open .sf-desc-more { display: none !important; }
+  body.page-shorts .sf-root.sf-cp-open .sf-player-box::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 45%; z-index: 3; pointer-events: none;
+    background: linear-gradient(transparent, rgba(0, 0, 0, .7));
+  }
+}
+/* スマホ: 下から出るコメント欄の上には何も重ねない */
+@media (max-width: 760px) {
+  body.page-shorts .sf-root.sf-cp-open .sf-info { visibility: hidden; }
+  body.page-shorts .sf-root.sf-cp-open .sf-side { visibility: hidden; }
+}
+
+/* ════════════════════════════════════════════════════════
+   ダウンロード画面
+   ════════════════════════════════════════════════════════ */
+html.vdl-lock, html.vdl-lock body { overflow: hidden !important; }
+.vdl-backdrop {
+  position: fixed; inset: 0; z-index: 2147483000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(8, 5, 15, .66); backdrop-filter: blur(4px);
+  opacity: 0; transition: opacity .18s ease;
+}
+.vdl-backdrop.open { opacity: 1; }
+.vdl {
+  position: relative; display: flex; flex-direction: column;
+  width: min(640px, 100%); max-height: min(86vh, 760px);
+  background: var(--vy-panel, #181127); color: var(--vy-text, #f1ecf8);
+  border: 1px solid var(--vy-border-2, #4a3870); border-radius: 18px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .6);
+  transform: translateY(14px) scale(.98); transition: transform .2s cubic-bezier(.22, .8, .24, 1);
+  overflow: hidden; font-family: var(--vy-font, inherit);
+}
+.vdl-backdrop.open .vdl { transform: none; }
+.vdl-head { display: flex; align-items: center; gap: 14px; padding: 16px 16px 14px 18px; border-bottom: 1px solid var(--vy-border, #34274f); }
+.vdl-thumb { width: 96px; aspect-ratio: 16 / 9; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: var(--vy-panel-3, #2b1f45); }
+.vdl-head-text { flex: 1; min-width: 0; }
+.vdl-head-label { font-size: .72rem; font-weight: 700; color: var(--vy-accent, #d946ef); letter-spacing: .04em; margin-bottom: 4px; }
+.vdl-video-title { font-size: .92rem; font-weight: 700; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.vdl-close {
+  width: 36px; height: 36px; border-radius: 50%; border: 0; cursor: pointer; flex-shrink: 0;
+  display: grid; place-items: center; background: transparent; color: var(--vy-muted, #b3a6c9);
+}
+.vdl-close:hover { background: rgba(139, 92, 246, .2); color: #fff; }
+
+.vdl-tabs {
+  display: flex; gap: 6px; padding: 12px 14px; overflow-x: auto; scrollbar-width: none;
+  border-bottom: 1px solid var(--vy-border, #34274f); flex-shrink: 0;
+}
+.vdl-tabs::-webkit-scrollbar { display: none; }
+.vdl-tab {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 8px 12px 8px 10px; border-radius: 12px; cursor: pointer; text-align: left;
+  background: var(--vy-panel-2, #211734); border: 1.5px solid transparent; color: var(--vy-muted, #b3a6c9);
+  font: inherit; transition: background .15s, border-color .15s, color .15s;
+}
+.vdl-tab:hover:not(:disabled) { color: var(--vy-text, #f1ecf8); border-color: var(--vy-border-2, #4a3870); }
+.vdl-tab:disabled { opacity: .45; cursor: default; }
+.vdl-tab.active { color: #fff; background: rgba(139, 92, 246, .22); border-color: #a855f7; }
+.vdl-tab-ic { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: rgba(255, 255, 255, .06); flex-shrink: 0; }
+.vdl-tab.active .vdl-tab-ic { background: var(--vy-grad); color: #fff; }
+.vdl-tab-ic svg { width: 15px; height: 15px; }
+.vdl-tab-txt { display: flex; flex-direction: column; gap: 2px; line-height: 1.15; }
+.vdl-tab-txt b { font-size: .8rem; white-space: nowrap; }
+.vdl-tab-txt small { font-size: .64rem; opacity: .8; white-space: nowrap; }
+
+.vdl-body { flex: 1; min-height: 160px; overflow-y: auto; padding: 14px; scrollbar-width: thin; }
+.vdl-note { font-size: .74rem; line-height: 1.55; color: var(--vy-muted, #b3a6c9); padding: 8px 12px; margin-bottom: 10px; border-radius: 10px; background: rgba(139, 92, 246, .08); }
+.vdl-note.warn { background: rgba(251, 191, 36, .1); color: #fcd34d; }
+.vdl-grid { display: flex; flex-direction: column; gap: 6px; }
+.vdl-opt {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px;
+  border-radius: 12px; cursor: pointer; text-align: left; font: inherit; color: inherit;
+  background: var(--vy-panel-2, #211734); border: 1.5px solid transparent;
+  transition: background .12s, border-color .12s;
+}
+.vdl-opt:hover { border-color: var(--vy-border-2, #4a3870); background: var(--vy-panel-3, #2b1f45); }
+.vdl-opt.selected { border-color: #a855f7; background: rgba(139, 92, 246, .2); box-shadow: inset 0 0 0 1px rgba(168, 85, 247, .35); }
+.vdl-radio {
+  width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+  border: 2px solid var(--vy-border-2, #4a3870); position: relative; transition: border-color .12s;
+}
+.vdl-opt.selected .vdl-radio { border-color: #c084fc; }
+.vdl-opt.selected .vdl-radio::after { content: ''; position: absolute; inset: 3px; border-radius: 50%; background: #e879f9; }
+.vdl-badge {
+  min-width: 46px; padding: 5px 7px; border-radius: 7px; text-align: center; flex-shrink: 0;
+  font-size: .68rem; font-weight: 800; letter-spacing: .03em; line-height: 1;
+  background: rgba(255, 255, 255, .08); color: var(--vy-muted, #b3a6c9);
+}
+.vdl-badge-4k, .vdl-badge-8k, .vdl-badge-5k { background: linear-gradient(135deg, #f59e0b, #ef4444); color: #fff; }
+.vdl-badge-2k { background: linear-gradient(135deg, #8b5cf6, #ec4899); color: #fff; }
+.vdl-badge-hd { background: rgba(139, 92, 246, .3); color: #e9d5ff; }
+.vdl-badge-sd { background: rgba(255, 255, 255, .08); color: var(--vy-muted, #b3a6c9); }
+.vdl-badge-m4a, .vdl-badge-mp3 { background: rgba(16, 185, 129, .2); color: #6ee7b7; }
+.vdl-badge-webm, .vdl-badge-opus { background: rgba(59, 130, 246, .2); color: #93c5fd; }
+.vdl-badge-jpg { background: rgba(236, 72, 153, .18); color: #f9a8d4; }
+.vdl-badge-cc { background: rgba(250, 204, 21, .16); color: #fde68a; }
+.vdl-opt-img { width: 64px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: var(--vy-panel-3, #2b1f45); }
+.vdl-opt-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.vdl-opt-title { font-size: .88rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vdl-opt-title small { font-weight: 500; color: var(--vy-muted, #b3a6c9); margin-left: .35em; font-size: .74rem; }
+.vdl-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.vdl-chip { font-size: .64rem; padding: 2px 6px; border-radius: 5px; background: rgba(255, 255, 255, .06); color: var(--vy-muted, #b3a6c9); white-space: nowrap; }
+.vdl-size { font-size: .76rem; font-weight: 700; color: var(--vy-muted, #b3a6c9); flex-shrink: 0; font-variant-numeric: tabular-nums; text-align: right; min-width: 4.5em; }
+.vdl-opt.selected .vdl-size { color: #f5d0fe; }
+.vdl-loading, .vdl-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px 10px; color: var(--vy-muted, #b3a6c9); font-size: .84rem; text-align: center; }
+.vdl-spin { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(233, 213, 255, .18); border-top-color: #e879f9; animation: vy-spin .8s linear infinite; }
+@keyframes vy-spin { to { transform: rotate(360deg); } }
+
+.vdl-foot {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--vy-border, #34274f); background: var(--vy-bg-2, #130d20);
+}
+.vdl-summary { flex: 1; min-width: 180px; }
+.vdl-summary-label { font-size: .66rem; font-weight: 700; color: var(--vy-dim, #7f7299); letter-spacing: .04em; }
+.vdl-summary-text { font-size: .84rem; font-weight: 700; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vdl-foot-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.vdl-sub-fmt { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--vy-panel-2, #211734); }
+.vdl-sub-btn { border: 0; background: transparent; color: var(--vy-muted, #b3a6c9); font: 700 .74rem/1 inherit; font-family: inherit; padding: 7px 11px; border-radius: 7px; cursor: pointer; }
+.vdl-sub-btn.active { background: rgba(139, 92, 246, .35); color: #fff; }
+.vdl-go {
+  display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 20px;
+  border-radius: 999px; border: 0; cursor: pointer; text-decoration: none; white-space: nowrap;
+  background: var(--vy-grad); color: #fff; font: 700 .88rem/1 inherit; font-family: inherit;
+  box-shadow: var(--vy-glow); transition: transform .12s, filter .12s;
+}
+.vdl-go:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.vdl-go:active { transform: scale(.97); }
+.vdl-go:disabled, .vdl-go[aria-disabled="true"] { opacity: .45; pointer-events: none; box-shadow: none; }
+.vdl-go svg { width: 17px; height: 17px; }
+
+/* ライトテーマ */
+[data-theme="light"] .vdl { background: #fff; color: #1f1235; border-color: rgba(139, 92, 246, .25); }
+[data-theme="light"] .vdl-tab, [data-theme="light"] .vdl-opt, [data-theme="light"] .vdl-sub-fmt { background: #f5f3ff; }
+[data-theme="light"] .vdl-tab.active, [data-theme="light"] .vdl-opt.selected { background: #ede9fe; color: #3b0764; }
+[data-theme="light"] .vdl-opt:hover { background: #ede9fe; }
+[data-theme="light"] .vdl-foot { background: #faf8ff; }
+[data-theme="light"] .vdl-chip, [data-theme="light"] .vdl-badge-sd, [data-theme="light"] .vdl-tab-ic { background: rgba(91, 33, 182, .08); color: #5b21b6; }
+[data-theme="light"] .vdl-opt.selected .vdl-size { color: #86198f; }
+[data-theme="light"] .vdl-note.warn { color: #92400e; }
+[data-theme="light"] .vdl-close:hover { color: #3b0764; }
+[data-theme="light"] .vdl-sub-btn.active { color: #3b0764; background: #ddd6fe; }
+
+/* スマホ: 下から出るシート */
+@media (max-width: 640px) {
+  .vdl-backdrop { align-items: flex-end; padding: 0; }
+  .vdl { width: 100%; max-height: 88vh; border-radius: 20px 20px 0 0; border-bottom: 0; transform: translateY(40px); }
+  .vdl::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--vy-border-2, #4a3870); margin: 8px auto 0; }
+  .vdl-head { padding: 10px 12px 12px 14px; }
+  .vdl-thumb { width: 76px; }
+  .vdl-tab { padding: 7px 10px 7px 8px; }
+  .vdl-tab-txt small { display: none; }
+  .vdl-opt { padding: 10px 11px; gap: 10px; }
+  .vdl-badge { min-width: 40px; }
+  .vdl-foot-actions { width: 100%; }
+  .vdl-go { flex: 1; justify-content: center; }
+}
+.vdl-radio svg { display: none; }
+.vdl-head-label { display: flex; align-items: center; gap: 5px; }
+.vdl-head-label svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── チャンネル検索アイコン (虫眼鏡) ── */
+.ch-search-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text, #e5e7eb);
+  border-radius: 50%;
+  transition: background .15s;
+}
+.ch-search-icon:hover { background: rgba(139,92,246,.12); }
+.ch-search-back {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; flex-shrink: 0;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text, #e5e7eb);
+  border-radius: 50%;
+  transition: background .15s;
+}
+.ch-search-back:hover { background: rgba(139,92,246,.12); }
+
+/* ── 登録チャンネルページ ── */
+.subs-channels-row-wrap { margin-bottom: 1.5rem; }
+.subs-channels-row {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 4px 0 12px; -webkit-overflow-scrolling: touch;
+}
+.subs-channels-row::-webkit-scrollbar { height: 4px; }
+.subs-ch-avatar-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-decoration: none; color: inherit; flex-shrink: 0; width: 80px;
+  scroll-snap-align: start; cursor: pointer;
+}
+.subs-ch-avatar-wrap { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; }
+.subs-ch-avatar { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .3s; }
+.subs-ch-avatar.loaded { opacity: 1; }
+.subs-ch-avatar-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(139,92,246,.15); color: #c4b5fd; font-weight: 700; font-size: 1.2rem; }
+.subs-ch-name { font-size: .72rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.subs-channels-more {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 8px 16px;
+  background: rgba(139,92,246,.1); border: 1px solid rgba(139,92,246,.25);
+  border-radius: 999px; color: #c4b5fd; cursor: pointer;
+  font-size: .85rem; font-weight: 600; transition: background .15s;
+}
+.subs-channels-more:hover { background: rgba(139,92,246,.2); }
+.subs-channels-list { margin-bottom: 1.5rem; }
+.subs-videos-title { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+
+/* ── ホーム引っ張って更新 ── */
+.vy-pull-spinner {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  height: 0; overflow: hidden; transition: height .25s ease;
+  color: var(--text, #e5e7eb); font-size: .85rem;
+}
+.vy-pull-spinner.show { height: 48px; }
+.vy-pull-spinner .spinner { width: 20px; height: 20px; }
+
+/* ── チャンネル投稿 (コミュニティ) の修正 ── */
+.community-post-content { word-break: break-word; overflow-wrap: anywhere; }
+.community-post-content img { max-width: 100%; border-radius: 8px; margin-top: 8px; }

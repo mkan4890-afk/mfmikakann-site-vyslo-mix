@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}履歴 — Vyslo Tube{% endblock %}
+{% block body_class %}page-history{% endblock %}
+{% set active = "history" %}
+{% block content %}
+<main class="lib-main">
+    <div class="lib-header">
+      <h1 class="lib-title">履歴</h1>
+    </div>
+
+    <div class="lib-tabs">
+      <button class="lib-tab active" data-htab="long">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        ロング動画
+        <span class="lib-tab-count" id="histCount"></span>
+      </button>
+      <button class="lib-tab" data-htab="shorts">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        ショート
+        <span class="lib-tab-count" id="shortsHistCount"></span>
+      </button>
+    </div>
+
+    <!-- ロング動画履歴 -->
+    <div class="lib-content" id="histPanel">
+      <div class="lib-hist-toolbar vh-toolbar" id="histToolbar" hidden>
+        <label class="vh-search" for="histSearchInput">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+          <input type="search" id="histSearchInput" placeholder="視聴履歴を検索" autocomplete="off" aria-label="視聴履歴を検索" />
+        </label>
+        <button type="button" class="lib-clear-btn vh-clear" id="clearHistBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          すべて削除
+        </button>
+      </div>
+      <div class="lib-empty" id="histEmpty" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="12 8 12 12 14 14"/><circle cx="12" cy="12" r="9"/></svg>
+        <p>まだ何も見ていません</p>
+        <p class="lib-empty-hint">動画を見ると、ここに自動で残ります</p>
+      </div>
+      <div class="vh-sections" id="histGrid"></div>
+    </div>
+
+    <!-- ショート履歴 -->
+    <div class="lib-content" id="shortsHistPanel" hidden>
+      <div class="lib-hist-toolbar vh-toolbar vh-toolbar-end" id="shortsHistToolbar" hidden>
+        <button type="button" class="lib-clear-btn vh-clear" id="clearShortsHistBtn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+          すべて削除
+        </button>
+      </div>
+      <div class="lib-empty" id="shortsHistEmpty" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <p>まだショートを見ていません</p>
+        <p class="lib-empty-hint">ショートを見ると、ここに自動で残ります</p>
+      </div>
+      <div class="vh-shorts-grid" id="shortsHistGrid"></div>
+    </div>
+</main>
+{% endblock %}

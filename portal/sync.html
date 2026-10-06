@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" href="/portal/favicon.ico?v=20261004" sizes="32x32" />
+<link rel="shortcut icon" href="/portal/favicon.ico?v=20261004" />
+<link rel="apple-touch-icon" href="/portal/apple-touch-icon.png?v=20261004" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<meta name="referrer" content="no-referrer" />
+<title>Google</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #0e0a17; color: #b3a6c9;
+    font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif; }
+  body { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 14px; font-size: 13px; letter-spacing: .1em; }
+  .spinner { width: 34px; height: 34px; border-radius: 50%; border: 3px solid #34274f; border-top-color: #8b5cf6; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<div>アカウントを確認中…</div>
+<script>
+/* =====================================================================
+   VYSLO MIX アカウント同期ページ
+   ---------------------------------------------------------------------
+   同じ端末・同じブラウザの中だけで、URL 間のアカウント情報をそろえる。
+
+   安全のための決まり:
+     ・受け渡しは「このブラウザが今まさに始めた同期」だけ。
+       始めた側がランダムな合言葉 (nonce) を sessionStorage に持ち、
+       受け取ったデータの合言葉が一致しないものは絶対に取り込まない。
+       → 他人から送られたリンクを開いても、他人のアカウントにはならない。
+     ・トークンは 1回限り・2分で失効。許可された URL 同士でしか受け渡さない。
+     ・IP アドレスや端末の機種などでは判定しない。
+       → 同じ学校・職場 (同じネットワーク、同じ機種) の別の人が
+         同じユーザーになることはない。
+
+   action=pull : 相手が「アカウントをちょうだい」と言っている
+   action=give : 相手が「あなたのアカウントを確認させて」と言っている (相手側にアカウントが無いとき)
+   action=recv : give の結果を受け取る
+   ===================================================================== */
+(function () {
+  "use strict";
+  var PEERS = [
+    "https://mfmikakann-site-vyslo-mix-10032028.up.railway.app",
+    "https://mfmikakann-site-vyslo-mix-2.up.railway.app"
+  ];
+  var COOKIES = ["vyslo_uid", "vyslo_devkey", "vyslo_hcode"];
+  var KEEP = { vyslo_view: 1 };
+  var NONCE_RE = /^[0-9a-f]{32}$/;
+  var PENDING = "vyslo_sync_recv";
+  var p = new URLSearchParams(location.search);
+  var action = p.get("action") || "";
+  var ret = p.get("r") || "";
+  var nonce = p.get("n") || "";
+  // URL から合言葉・トークンを消しておく (履歴などに残さない)
+  try { history.replaceState(null, "", location.pathname); } catch (e) {}
+
+  function originOf(u) { try { return new URL(u).origin; } catch (e) { return ""; } }
+  function okPeer(u) { var o = originOf(u); return o && o !== location.origin && PEERS.indexOf(o) !== -1; }
+  function goto(u, key, val) {
+    var x = new URL(u);
+    x.searchParams.set(key, val);
+    location.replace(x.toString());
+  }
+  function home() { location.replace("/"); }
+  function cookieGet(n) {
+    var m = document.cookie.match(new RegExp("(?:^|;\\s*)" + n + "=([^;]+)"));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function cookieSet(n, v) {
+    document.cookie = n + "=" + encodeURIComponent(v) + "; path=/; max-age=63072000; SameSite=Lax; Secure";
+  }
+  function myUid() {
+    try { return localStorage.getItem("uid") || cookieGet("vyslo_uid") || ""; } catch (e) { return ""; }
+  }
+  function rnd() {
+    var a = new Uint8Array(16); crypto.getRandomValues(a);
+    return Array.prototype.map.call(a, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+  }
+  function snapshot(n) {
+    var ls = {};
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf("vyslo_sync") !== 0 && !KEEP[k]) ls[k] = localStorage.getItem(k);
+    }
+    var ck = {};
+    COOKIES.forEach(function (c) { var v = cookieGet(c); if (v) ck[c] = v; });
+    return { n: n, ls: ls, ck: ck };
+  }
+  async function put(n) {
+    var r = await fetch("/__idsync/put", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify(snapshot(n)), cache: "no-store", credentials: "same-origin"
+    });
+    if (!r.ok) throw new Error("put");
+    return (await r.json()).t;
+  }
+
+  var guard = setTimeout(function () { if (okPeer(ret)) goto(ret, "__ids", "none"); else home(); }, 15000);
+
+  (async function () {
+    try {
+      // ---- 相手 (この端末の別 URL) にアカウントを渡す ----
+      if (action === "pull" && okPeer(ret) && NONCE_RE.test(nonce)) {
+        if (myUid()) {
+          var t = await put(nonce);
+          clearTimeout(guard);
+          return goto(ret, "__ids", t);
+        }
+        // こちらにアカウントが無い → 相手のアカウントをこちらに取り込む (同じブラウザで確認してから)
+        var na = rnd();
+        sessionStorage.setItem(PENDING, JSON.stringify({ na: na, back: ret, at: Date.now() }));
+        clearTimeout(guard);
+        var me = location.origin + "/portal/sync.html?action=recv";
+        var u = new URL(originOf(ret) + "/portal/sync.html");
+        u.searchParams.set("action", "give");
+        u.searchParams.set("r", me);
+        u.searchParams.set("n", na);
+        return location.replace(u.toString());
+      }
+
+      // ---- 相手から「アカウントを確認させて」 ----
+      if (action === "give" && okPeer(ret) && NONCE_RE.test(nonce)) {
+        if (!myUid()) { clearTimeout(guard); return goto(ret, "tk", "none"); }
+        var t2 = await put(nonce);
+        clearTimeout(guard);
+        return goto(ret, "tk", t2);
+      }
+
+      // ---- give の結果を受け取る ----
+      if (action === "recv") {
+        var pend = null;
+        try { pend = JSON.parse(sessionStorage.getItem(PENDING) || "null"); } catch (e) {}
+        sessionStorage.removeItem(PENDING);
+        var tk = p.get("tk") || "";
+        if (!pend || !okPeer(pend.back) || Date.now() - pend.at > 120000) { clearTimeout(guard); return home(); }
+        if (tk && tk !== "none" && !myUid()) {
+          var r2 = await fetch(originOf(pend.back) + "/__idsync/get?t=" + encodeURIComponent(tk), { cache: "no-store" });
+          if (r2.ok) {
+            var d = await r2.json();
+            // 合言葉が一致したものだけ取り込む
+            if (d && d.n === pend.na) {
+              Object.keys(d.ls || {}).forEach(function (k) { try { localStorage.setItem(k, d.ls[k]); } catch (e) {} });
+              Object.keys(d.ck || {}).forEach(function (k) { cookieSet(k, d.ck[k]); });
+            }
+          }
+        }
+        clearTimeout(guard);
+        return goto(pend.back, "__ids", "same");
+      }
+    } catch (e) {}
+    clearTimeout(guard);
+    if (okPeer(ret)) goto(ret, "__ids", "none"); else home();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}チャンネル — Vyslo Tube{% endblock %}
+{% block body_class %}page-channel{% endblock %}
+{% block content %}
+<div id="channelHero" class="channel-hero" hidden>
+    <div class="channel-banner-wrap" id="channelBannerWrap">
+      <img class="channel-banner" id="channelBanner" alt="" />
+    </div>
+    <div class="channel-info-wrap">
+      <div class="channel-avatar-wrap">
+        <img class="channel-avatar" id="channelAvatar" alt="" />
+      </div>
+      <div class="channel-meta">
+        <h1 class="channel-name" id="channelName"></h1>
+        <div class="channel-sub-meta" id="channelSubMeta"></div>
+        <p class="channel-desc" id="channelDesc"></p>
+        <button class="channel-desc-toggle" id="channelDescToggle" hidden>続きを読む</button>
+        <button class="sub-btn" id="channelSubBtn" hidden></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="channelHeroSkeleton" class="channel-hero-skeleton">
+    <div class="skeleton-banner"></div>
+    <div class="channel-info-wrap">
+      <div class="channel-avatar-wrap">
+        <div class="skeleton-avatar-lg"></div>
+      </div>
+      <div class="channel-meta">
+        <div class="skeleton-line" style="width:200px;height:20px;margin-bottom:10px;border-radius:6px;"></div>
+        <div class="skeleton-line" style="width:260px;height:13px;margin-bottom:8px;border-radius:5px;"></div>
+        <div class="skeleton-line" style="width:340px;height:12px;border-radius:5px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="channel-tabs-bar" id="channelTabsBar">
+    <div class="channel-tabs-inner">
+      <button class="ch-search-icon" id="chSearchIcon" title="このチャンネルで探す" aria-label="このチャンネルで探す">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <button class="ch-tab active" data-tab="home">ホーム</button>
+      <button class="ch-tab" data-tab="videos">動画</button>
+      <button class="ch-tab" data-tab="shorts">ショート</button>
+      <button class="ch-tab" data-tab="streams">ライブ</button>
+      <button class="ch-tab" data-tab="playlists">再生リスト</button>
+      <button class="ch-tab" data-tab="community">投稿</button>
+      <button class="ch-tab" data-tab="latest">新着</button>
+    </div>
+  </div>
+
+  <div id="channelSearchForm" class="channel-search-form" hidden>
+    <button class="ch-search-back" id="chSearchBack" title="戻る" aria-label="戻る">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <form id="chSearchForm" class="ch-search-bar">
+      <input type="text" id="chSearchInput" class="search-input" placeholder="このチャンネルの動画をさがす" autocomplete="off" />
+      <button type="submit" class="search-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <main>
+    <div id="tabControls" class="tab-controls">
+      <div id="sortControls" class="sort-controls">
+        <label class="filter-label">並べ替え</label>
+        <select id="sortSelect" class="filter-select">
+          <option value="newest">新着順</option>
+          <option value="oldest">古いもの順</option>
+          <option value="popular">再生数順</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="contentArea">
+      <div id="homeArea" class="home-area" hidden></div>
+      <div id="contentGrid" class="video-grid"></div>
+      <div id="communityArea" class="community-area" hidden></div>
+    </div>
+
+    <div class="ch-load-more-wrap" id="loadMoreWrap" hidden>
+      <button class="ch-load-more" id="loadMoreBtn">続きを読む</button>
+    </div>
+  </main>
+{% endblock %}

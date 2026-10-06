@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Vyslo Tube{% endblock %}
+{% block body_class %}page-home{% endblock %}
+{% block content %}
+<div class="ys-chipbar vy-home-chipbar" id="homeChipBar">
+  <div class="ys-chipbar-inner">
+    <button type="button" class="ys-chip-arrow ys-chip-arrow-l" id="homeChipPrev" aria-label="前へ" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="15 18 9 12 15 6"/></svg></button>
+    <div class="ys-chips" id="homeChips" role="tablist" aria-label="カテゴリ">
+      <button type="button" class="ys-chip active" data-chip="" role="tab">すべて</button>
+      <button type="button" class="ys-chip" data-chip="unwatched" role="tab">未視聴</button>
+      <button type="button" class="ys-chip" data-chip="recent" role="tab">最近アップロードされた動画</button>
+      <button type="button" class="ys-chip" data-chip="trending" role="tab">急上昇</button>
+      <button type="button" class="ys-chip" data-chip="music" role="tab">音楽</button>
+      <button type="button" class="ys-chip" data-chip="sports" role="tab">スポーツ</button>
+      <button type="button" class="ys-chip" data-chip="movie" role="tab">映画</button>
+      <button type="button" class="ys-chip" data-chip="news" role="tab">ニュース</button>
+      <button type="button" class="ys-chip" data-chip="game" role="tab">ゲーム</button>
+      <button type="button" class="ys-chip" data-chip="cooking" role="tab">料理</button>
+      <button type="button" class="ys-chip" data-chip="travel" role="tab">旅行</button>
+      <button type="button" class="ys-chip" data-chip="tech" role="tab">テクノロジー</button>
+      <button type="button" class="ys-chip" data-chip="learning" role="tab">学習</button>
+      <button type="button" class="ys-chip" data-chip="pets" role="tab">ペット</button>
+      <button type="button" class="ys-chip" data-chip="anime" role="tab">アニメ</button>
+      <button type="button" class="ys-chip" data-chip="comedy" role="tab">お笑い</button>
+      <button type="button" class="ys-chip" data-chip="live" role="tab">ライブ</button>
+    </div>
+    <button type="button" class="ys-chip-arrow ys-chip-arrow-r" id="homeChipNext" aria-label="次へ" hidden><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><polyline points="9 18 15 12 9 6"/></svg></button>
+  </div>
+</div>
+<main class="home-main">
+  <section class="home-recommend">
+    <div id="homeShortsShelf" class="vy-home-shorts" hidden>
+      <div class="vy-home-shorts-head">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10.5 9.5v5l4-2.5z" fill="currentColor"/></svg>
+        <span>ショート</span>
+      </div>
+      <div class="vy-home-shorts-row" id="homeShortsRow"></div>
+    </div>
+    <div id="recommendGrid" class="video-grid">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>動画を取得中…</p>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

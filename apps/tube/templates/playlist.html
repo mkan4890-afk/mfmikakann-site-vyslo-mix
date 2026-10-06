@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}再生リスト — Vyslo Tube{% endblock %}
+{% block body_class %}page-playlist{% endblock %}
+{% block content %}
+<main>
+    <div id="playlistSkeleton" class="playlist-skeleton">
+      <div class="pl-skeleton-header">
+        <div class="pl-skeleton-thumb skeleton-animate"></div>
+        <div class="pl-skeleton-meta">
+          <div class="skeleton-line skeleton-title skeleton-animate" style="width:70%"></div>
+          <div class="skeleton-line skeleton-animate" style="width:40%;margin-top:0.6rem"></div>
+          <div class="skeleton-line skeleton-animate" style="width:30%;margin-top:0.4rem"></div>
+        </div>
+      </div>
+      <div class="playlist-grid">
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+        <div class="skeleton-card"><div class="skeleton-thumb"></div><div class="skeleton-info"><div class="skeleton-line skeleton-title"></div><div class="skeleton-line skeleton-title-short"></div><div class="skeleton-channel-row"><div class="skeleton-avatar"></div><div class="skeleton-line skeleton-channel"></div></div><div class="skeleton-line skeleton-views"></div></div></div>
+      </div>
+    </div>
+
+    <div id="playlistMain" hidden>
+      <div id="playlistHeader" class="playlist-header"></div>
+      <div id="playlistGrid" class="playlist-grid" style="max-width:1200px;margin:0 auto;padding:0 1.5rem;"></div>
+      <div class="pl-pagination" id="plPagination" hidden>
+        <button id="plPrevBtn" class="pl-page-btn" disabled>← 前</button>
+        <span id="plPageInfo" class="pl-page-info">1 ページ目</span>
+        <button id="plNextBtn" class="pl-page-btn">次 →</button>
+      </div>
+    </div>
+  </main>
+{% endblock %}

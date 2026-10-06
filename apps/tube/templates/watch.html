@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+{% block title %}視聴中 - Vyslo Tube{% endblock %}
+{% block body_class %}page-watch{% endblock %}
+{% block content %}
+<main class="watch-main" id="watchMain">
+    <div class="watch-layout">
+      <!-- Left: player + info -->
+      <div class="watch-left">
+        <!-- Player -->
+        <div class="player-wrap" id="playerWrap">
+          <div class="player-skeleton" id="playerSkeleton"></div>
+          <video id="videoPlayer" class="video-player" preload="metadata" hidden></video>
+          <audio id="hqAudio" hidden></audio>
+          <iframe id="nocookiePlayer" class="video-player nocookie-player" hidden allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src="about:blank"></iframe>
+          <iframe id="eduPlayer" class="video-player nocookie-player" hidden allowfullscreen allow="autoplay; encrypted-media; picture-in-picture" src="about:blank"></iframe>
+
+          <!-- Top-left controls (settings button removed) -->
+          <div class="vctrls-tl" id="vctrlsTL" hidden></div>
+
+          <!-- Narration OFF button (shown only when narration is playing) -->
+          <button class="vctrls-narration-off" id="vcNarrationOff" hidden title="ナレーションを止める">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+            <span>ナレーションを止める</span>
+          </button>
+
+          <!-- Center play overlay -->
+          <div class="vctrls-center-play" id="vcCenterPlay">
+            <div class="vctrls-center-icon" id="vcCenterIcon"></div>
+          </div>
+
+          <!-- Custom controls overlay -->
+          <div class="vctrls" id="vctrls">
+            <div class="vctrls-gradient">
+              <div class="vctrls-progress-wrap" id="vctrlsProgressWrap">
+                <div class="vctrls-seek-track">
+                  <div class="vctrls-seek-buf" id="vcBuf"></div>
+                  <input type="range" class="vctrls-seek" id="vcSeek" min="0" max="1000" step="1" value="0">
+                </div>
+              </div>
+              <div class="vctrls-bar">
+                <div class="vctrls-left">
+                  <button class="vctrls-btn" id="vcPlay" title="再生・停止 (Space)"></button>
+                  <button class="vctrls-btn vctrls-btn-skip" id="vcSkipBack" title="10秒戻す (←)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">10</text></svg>
+                  </button>
+                  <button class="vctrls-btn vctrls-btn-skip" id="vcSkipFwd" title="10秒送る (→)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-3.54"/><text x="12" y="15" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-family="sans-serif" font-weight="700">10</text></svg>
+                  </button>
+                  <div class="vctrls-vol-wrap">
+                    <button class="vctrls-btn" id="vcMute" title="消音 (M)"></button>
+                    <div class="vctrls-vol-slider-wrap">
+                      <input type="range" class="vctrls-vol-slider" id="vcVol" min="0" max="1" step="0.02" value="1">
+                    </div>
+                    <span class="vctrls-vol-pct" id="vcVolPct">100%</span>
+                  </div>
+                  <span class="vctrls-time" id="vcTime">0:00 / 0:00</span>
+                </div>
+                <div class="vctrls-right">
+                  <button class="vctrls-btn vctrls-toggle-btn" id="vcRepeat" title="リピート再生">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  </button>
+                  <button type="button" class="vctrls-btn vc-tgl" id="vcAutoNext" role="switch" aria-checked="false" title="次の動画へ自動で移る: OFF (クリックで ON)" aria-label="次の動画へ自動で移る">
+                    <span class="vc-tgl-cap" aria-hidden="true">次の動画へ</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><polygon points="5 5 14 12 5 19 5 5" fill="currentColor" stroke="none"/><line x1="18" y1="5" x2="18" y2="19"/></svg>
+                    <span class="vc-mini-sw" aria-hidden="true"><span class="vc-mini-knob"></span></span>
+                    <span class="vc-an-state vc-sr" aria-hidden="true">OFF</span>
+                  </button>
+                  <button type="button" class="vctrls-btn vc-tgl" id="vcAutoplay" role="switch" aria-checked="true" title="自動再生: ON (クリックで OFF)" aria-label="自動再生">
+                    <span class="vc-tgl-cap" aria-hidden="true">自動再生</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polygon points="10 8.5 16 12 10 15.5 10 8.5" fill="currentColor" stroke="none"/></svg>
+                    <span class="vc-mini-sw" aria-hidden="true"><span class="vc-mini-knob"></span></span>
+                    <span class="vc-ap-state vc-sr" aria-hidden="true">ON</span>
+                  </button>
+                  <!-- Quality -->
+                  <div class="vctrls-dd-wrap" id="vcQualWrap">
+                    <button class="vctrls-btn vctrls-dd-btn" id="vcQualBtn" title="画質">画質</button>
+                    <div class="vctrls-dd-panel" id="vcQualPanel">
+                      <div class="vctrls-dd-label">画質</div>
+                      <div class="vctrls-dd-options" id="vcQualOpts">
+                        <span class="vctrls-dd-loading">取得中…</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Speed -->
+                  <div class="vctrls-dd-wrap" id="vcSpeedWrap">
+                    <button class="vctrls-btn vctrls-dd-btn vctrls-speed-btn" id="vcSpeedBtn" title="スピード (&lt; / &gt;)">1x</button>
+                    <div class="vctrls-dd-panel" id="vcSpeedPanel">
+                      <div class="vctrls-dd-label">スピード</div>
+                      <div class="vctrls-dd-options">
+                        <button class="vctrls-dd-opt" data-speed="0.25">0.25x</button>
+                        <button class="vctrls-dd-opt" data-speed="0.5">0.5x</button>
+                        <button class="vctrls-dd-opt" data-speed="0.75">0.75x</button>
+                        <button class="vctrls-dd-opt active" data-speed="1">1x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.25">1.25x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.5">1.5x</button>
+                        <button class="vctrls-dd-opt" data-speed="1.75">1.75x</button>
+                        <button class="vctrls-dd-opt" data-speed="2">2x</button>
+                        <button class="vctrls-dd-opt" data-speed="3">3x</button>
+                      </div>
+                    </div>
+                  </div>
+                  <button class="vctrls-btn" id="vcFs" title="全画面 (F)"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="player-error" id="playerError" hidden>
+            <div class="player-error-icon"><svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="40" height="40"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <p id="playerErrorMsg">この動画はうまく再生できませんでした。</p>
+            <button class="reload-btn" id="reloadBtn" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.54"/></svg>
+              ページを更新
+            </button>
+          </div>
+        </div>
+
+        <!-- Video info skeleton -->
+        <div class="video-info-skeleton" id="infoSkeleton">
+          <div class="sk-line sk-title"></div>
+          <div class="sk-line sk-title-short"></div>
+          <div class="sk-line sk-meta"></div>
+          <div class="sk-channel-row">
+            <div class="sk-avatar"></div>
+            <div class="sk-line sk-channel-name"></div>
+          </div>
+          <div class="sk-desc-block">
+            <div class="sk-line sk-desc-line"></div>
+            <div class="sk-line sk-desc-line"></div>
+            <div class="sk-line sk-desc-line sk-desc-short"></div>
+          </div>
+        </div>
+
+        <!-- Video info -->
+        <div class="video-info" id="videoInfo" hidden>
+          <h1 class="watch-title" id="watchTitle"></h1>
+          <div class="watch-meta" id="watchMeta"></div>
+
+          <div class="channel-row" id="channelRow">
+            <a class="channel-link" id="channelLink" href="#">
+              <img class="channel-avatar" id="channelAvatar" src="" alt="" hidden />
+              <div class="channel-avatar-placeholder" id="channelAvatarPlaceholder"></div>
+              <div class="channel-text">
+                <div class="channel-name" id="channelName"></div>
+                <div class="channel-subs" id="channelSubs"></div>
+              </div>
+            </a>
+            <div class="watch-actions" id="watchActions">
+              <button type="button" class="watch-like-btn vy-like-btn" id="watchFavBtn" title="いいね" aria-pressed="false" hidden>
+                <svg class="vy-like-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                <span class="vy-like-num">…</span>
+              </button>
+              <button class="watch-cmt-btn" id="watchCmtBtn" type="button" title="コメントを開く" aria-expanded="false" aria-controls="commentsPanel">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <span>コメント</span><span class="watch-cmt-count" id="watchCmtCount"></span>
+              </button>
+              <button class="sub-btn" id="watchSubBtn" hidden></button>
+              <div class="share-wrap" id="watchShareWrap">
+                <button class="watch-share-btn" id="watchShareBtn" title="共有" hidden>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </button>
+                <div class="share-panel" id="watchSharePanel" hidden role="menu">
+                  <button class="share-panel-item" data-action="copy-app">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    このページのURLをコピー
+                  </button>
+                  <button class="share-panel-item" data-action="copy-embed">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    埋め込みコードをコピー
+                  </button>
+                  <button class="share-panel-item" data-action="copy-yt">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                    YouTubeのリンクをコピー
+                  </button>
+                </div>
+              </div>
+              <div class="watch-pl-wrap" id="watchPlWrap" hidden>
+                <button class="watch-pl-btn" id="watchPlBtn" title="プレイリストに保存"></button>
+                <div class="watch-pl-popup" id="watchPlPopup" hidden></div>
+              </div>
+              <button class="watch-dl-btn" id="watchDlBtn" title="ダウンロード" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="19" height="19"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="description-wrap" id="descriptionWrap">
+            <div class="description-text" id="descriptionText"></div>
+            <button class="desc-toggle" id="descToggle" type="button" hidden>詳しく</button>
+          </div>
+        </div>
+
+        <!-- Comments section: 本家のように動画の下に開くパネル (ページの操作はロックしない) -->
+        <section class="vy-cmt-panel" id="commentsPanel" hidden aria-label="コメント">
+        <div class="comments-section" id="commentsSection">
+          <div class="comments-header">
+            <h3 class="comments-title">
+              コメント
+              <span class="comments-count" id="commentCount"></span>
+            </h3>
+            <div class="comments-sort" role="tablist" aria-label="並べ替え">
+              <button class="sort-btn active" data-sort="top" type="button" role="tab" aria-selected="true">人気順</button>
+              <button class="sort-btn" data-sort="new" type="button" role="tab" aria-selected="false">新しい順</button>
+            </div>
+            <button class="vy-cmt-close" id="commentsClose" type="button" title="コメントを閉じる" aria-label="コメントを閉じる">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="20" height="20"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="vy-cmt-scroll" id="commentsScroll">
+            <div id="commentsList" class="comments-list"></div>
+            <div class="load-more-wrap" id="loadMoreWrap" hidden>
+              <button id="loadMoreBtn" class="load-more-btn" type="button">さらに表示</button>
+            </div>
+          </div>
+        </div>
+        </section>
+
+        <!-- 説明 (詳しく) -->
+        <div class="vy-float" id="descFloat" hidden aria-hidden="true">
+          <div class="vy-float-backdrop" data-float-close></div>
+          <div class="vy-float-panel" role="dialog" aria-modal="true" aria-label="動画の詳細">
+            <button class="vy-float-close" type="button" data-float-close title="閉じる (Esc)">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <h3 class="vy-float-title">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              動画の詳細
+            </h3>
+            <div class="vy-desc-head" id="descFloatHead"></div>
+            <div class="vy-desc-body description-text" id="descFloatBody"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Floating sidebar toggle button (always visible, fixed bottom-right) -->
+      <button class="sidebar-fab" id="sidebarFab" title="関連動画を表示/隠す">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
+
+      <!-- Right: playlist panel + related videos -->
+      <aside class="watch-right" id="watchRight">
+        <div id="playlistPanel" hidden></div>
+        <div class="sidebar-toggle-header">
+          <div class="related-title" id="relatedTitle"></div>
+        </div>
+        <div id="relatedList" class="related-list">
+          <!-- skeletons injected by JS -->
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Keyboard Shortcut Help Modal -->
+  <div class="kb-modal-backdrop" id="kbModalBackdrop" hidden>
+    <div class="kb-modal" id="kbModal">
+      <div class="kb-modal-header">
+        <h2 class="kb-modal-title">操作キー</h2>
+        <button class="kb-modal-close" id="kbModalClose">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="kb-modal-body">
+        <div class="kb-section">
+          <div class="kb-row"><kbd>Space</kbd><kbd>K</kbd><span>再生・停止</span></div>
+          <div class="kb-row"><kbd>←</kbd><kbd>J</kbd><span>5秒巻き戻し(Shiftで10秒)</span></div>
+          <div class="kb-row"><kbd>→</kbd><kbd>L</kbd><span>5秒早送り(Shiftで10秒)</span></div>
+          <div class="kb-row"><kbd>↑</kbd><span>音を大きく</span></div>
+          <div class="kb-row"><kbd>↓</kbd><span>音を小さく</span></div>
+          <div class="kb-row"><kbd>M</kbd><span>消音</span></div>
+          <div class="kb-row"><kbd>F</kbd><span>全画面</span></div>
+          <div class="kb-row"><kbd>T</kbd><span>ワイド表示</span></div>
+          <div class="kb-row"><kbd>P</kbd><span>小窓で再生</span></div>
+          <div class="kb-row"><kbd>0</kbd>〜<kbd>9</kbd><span>0〜90%の位置へ移動</span></div>
+          <div class="kb-row"><kbd>,</kbd><span>コマ戻し</span></div>
+          <div class="kb-row"><kbd>.</kbd><span>コマ送り</span></div>
+          <div class="kb-row"><kbd>&lt;</kbd><span>遅くする</span></div>
+          <div class="kb-row"><kbd>&gt;</kbd><span>速くする</span></div>
+          <div class="kb-row"><kbd>?</kbd><span>この一覧を開く</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+
+{% endblock %}

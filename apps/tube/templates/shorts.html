@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}ショート - Vyslo Tube{% endblock %}
+{% block body_class %}page-shorts{% endblock %}
+{% block head %}<script>window._EDU_PARAMS={{ edu_params_json | safe }};</script>{% endblock %}
+{% block content %}
+<div class="sf-root" id="sfRoot">
+
+  <!-- Comments panel (hidden by default) -->
+  <div class="sf-comments-panel" id="sfCommentsPanel" hidden>
+    <div class="sf-cp-header">
+      <span class="sf-cp-title">コメント</span>
+      <div class="sf-cp-sort">
+        <button class="sf-cp-sort-btn active" data-sort="top">人気</button>
+        <button class="sf-cp-sort-btn" data-sort="new">新着順</button>
+      </div>
+      <button class="sf-cp-close" id="sfCpClose" title="閉じる">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="sf-cp-list" id="sfCpList"></div>
+    <div class="sf-cp-more" id="sfCpMore" hidden>
+      <button class="sf-cp-more-btn" id="sfCpMoreBtn">続きを読む</button>
+    </div>
+  </div>
+
+  <div class="sf-wrap" id="sfWrap">
+    <div class="sf-player-area">
+
+      <div class="sf-player-box" id="sfPlayerBox">
+        <div class="sf-skeleton" id="sfSkeleton"></div>
+        <iframe class="sf-iframe" id="sfIframe" src="about:blank"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen></iframe>
+
+      </div>
+
+      <!-- 動画の外 (左下) に表示する情報 -->
+      <div class="sf-info" id="sfInfo">
+        <div class="sf-overlay" id="sfOverlay">
+          <div class="sf-overlay-channel">
+            <a class="sf-ch-link" id="sfChLink" href="#">
+              <img class="sf-ch-avatar" id="sfChAvatar" src="" alt="" />
+              <span class="sf-ch-name" id="sfChName">取得中…</span>
+            </a>
+            <button class="sf-follow-btn" id="sfFollowBtn" title="フォロー" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+              <span id="sfFollowLabel">フォロー</span>
+            </button>
+          </div>
+          <div class="sf-overlay-title" id="sfOverlayTitle"></div>
+          <div class="sf-overlay-meta" id="sfOverlayMeta"></div>
+          <div class="sf-info-desc" id="sfInfoDesc"></div>
+          <button type="button" class="sf-desc-more" id="sfDescMore" hidden>説明を見る</button>
+        </div>
+      </div>
+
+      <!-- 説明パネル -->
+      <div class="sf-desc-sheet" id="sfDescSheet" hidden>
+        <div class="sf-desc-sheet-head">
+          <span>説明</span>
+          <button type="button" class="sf-cp-close" id="sfDescClose" title="閉じる">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="sf-desc-sheet-body">
+          <div class="sf-desc-sheet-title" id="sfDescTitle"></div>
+          <div class="sf-desc-sheet-stats" id="sfDescStats"></div>
+          <div class="sf-desc-sheet-text" id="sfDescText"></div>
+        </div>
+      </div>
+
+      <div class="sf-side" id="sfSide">
+
+        <button type="button" class="sf-action-btn sf-like vy-like-btn" id="sfLike" title="いいね" aria-label="いいね" aria-pressed="false">
+          <svg class="vy-like-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+          <span class="vy-like-num" id="sfLikeCount">…</span>
+        </button>
+
+        <button class="sf-action-btn" id="sfCommentBtn" title="コメント">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span>コメント</span>
+        </button>
+
+        <div class="share-wrap sf-share-wrap" id="sfShareWrap">
+          <button class="sf-action-btn" id="sfShareBtn" title="共有">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <span>共有</span>
+          </button>
+          <div class="share-panel sf-share-panel" id="sfSharePanel" hidden role="menu">
+            <button class="share-panel-item" data-action="copy-app">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              このページのURLをコピー
+            </button>
+            <button class="share-panel-item" data-action="copy-embed">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              埋め込みコードをコピー
+            </button>
+            <button class="share-panel-item" data-action="copy-yt">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1C4.5 20.4 12 20.4 12 20.4s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.8 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+              YouTubeのリンクをコピー
+            </button>
+          </div>
+        </div>
+
+        <div class="sf-pl-wrap" id="sfPlWrap">
+          <button type="button" class="sf-action-btn" id="sfPlBtn" title="プレイリストに保存" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="5" x2="15" y2="5"/><line x1="3" y1="10" x2="15" y2="10"/><line x1="3" y1="15" x2="11" y2="15"/><line x1="18" y1="12" x2="18" y2="20"/><line x1="14" y1="16" x2="22" y2="16"/></svg>
+            <span>保存</span>
+          </button>
+          <div class="watch-pl-popup sf-pl-popup" id="sfPlPopup" hidden></div>
+        </div>
+
+        <button type="button" class="sf-action-btn" id="sfDlBtn" title="ダウンロード">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>ダウンロード</span>
+        </button>
+
+      </div>
+
+    </div>
+    <!-- 上下の移動ボタン: 本家のように操作ボタンとは別に、右端へ独立して配置 -->
+    <div class="sf-navcol" id="sfNavCol">
+      <button class="sf-nav-btn" id="sfPrevBtn" title="前のショート" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+      </button>
+      <button class="sf-nav-btn" id="sfNextBtn" title="次のショート">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}

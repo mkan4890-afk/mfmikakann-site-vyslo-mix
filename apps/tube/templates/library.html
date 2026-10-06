@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}ライブラリ — Vyslo Tube{% endblock %}
+{% block body_class %}page-library{% endblock %}
+{% set active = "library" %}
+{% block content %}
+<main class="lib-main">
+    <div class="lib-header">
+      <h1 class="lib-title">ライブラリ</h1>
+    </div>
+
+    <div class="lib-tabs">
+      <button class="lib-tab active" data-tab="playlists">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        自作リスト
+        <span class="lib-tab-count" id="plCount"></span>
+      </button>
+      <button class="lib-tab" data-tab="favorites">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        お気に入り
+        <span class="lib-tab-count" id="favCount"></span>
+      </button>
+    </div>
+
+    <!-- 自作リスト -->
+    <div class="lib-content" id="plPanel">
+      <!-- 一覧ビュー -->
+      <div id="plListView">
+        <div class="lib-pl-toolbar">
+          <button class="lib-action-btn" id="newPlBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            リストを作る
+          </button>
+        </div>
+        <div class="lib-empty" id="plEmpty" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <p>プレイリストはまだ空っぽです</p>
+          <p class="lib-empty-hint">動画ページのリスト追加ボタンから入れられます</p>
+        </div>
+        <div class="lib-pl-grid" id="plGrid"></div>
+      </div>
+
+      <!-- 詳細ビュー -->
+      <div id="plDetailView" hidden>
+        <div class="lib-pl-detail-header">
+          <button class="lib-back-btn" id="plBackBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+            ← リスト一覧
+          </button>
+          <div class="lib-pl-detail-meta">
+            <div class="lib-pl-detail-name" id="plDetailName"></div>
+            <div class="lib-pl-detail-count" id="plDetailCount"></div>
+          </div>
+          <div class="lib-pl-detail-actions">
+            <button class="lib-action-btn" id="plRenameBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              名前を変える
+            </button>
+            <button class="lib-clear-btn" id="plDeleteBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+              削除
+            </button>
+          </div>
+        </div>
+        <div class="lib-pl-detail-list" id="plDetailList"></div>
+      </div>
+    </div>
+
+    <!-- お気に入り -->
+    <div class="lib-content" id="favPanel" hidden>
+      <!-- サブタブ -->
+      <div class="lib-fav-subtabs">
+        <button class="lib-fav-subtab active" data-favtab="all">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          すべて
+        </button>
+        <button class="lib-fav-subtab" data-favtab="videos">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          動画
+        </button>
+        <button class="lib-fav-subtab" data-favtab="playlists">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          プレイリスト
+        </button>
+        <button class="lib-fav-subtab" data-favtab="mixes">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+          ミックス
+        </button>
+      </div>
+
+      <!-- すべて (動画・プレイリスト・ミックスをまとめて表示) -->
+      <div id="favAllPanel">
+        <div class="lib-empty" id="favAllEmpty" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <p>お気に入りはまだありません</p>
+          <p class="lib-empty-hint">動画・プレイリスト・ミックスでハートを押すとここに入ります</p>
+        </div>
+        <div class="fav-all-sections" id="favAllSections"></div>
+      </div>
+
+      <!-- 動画お気に入り -->
+      <div id="favVideosPanel" hidden>
+        <div class="lib-hist-toolbar" id="favToolbar" hidden>
+          <button class="lib-clear-btn" id="clearFavBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            まとめて削除
+          </button>
+        </div>
+        <div class="lib-empty" id="favEmpty" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <p>ハートを付けた動画はまだありません</p>
+          <p class="lib-empty-hint">動画ページでハートを押すとここに入ります</p>
+        </div>
+        <div class="video-grid" id="favGrid"></div>
+      </div>
+
+      <!-- プレイリストお気に入り -->
+      <div id="favPlPanel" hidden>
+        <div class="lib-hist-toolbar" id="favPlToolbar" hidden>
+          <button class="lib-clear-btn" id="clearFavPlBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            まとめて削除
+          </button>
+        </div>
+        <div class="lib-empty" id="favPlEmpty" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          <p>ハートを付けたプレイリストはまだありません</p>
+          <p class="lib-empty-hint">プレイリストページでハートを押すとここに入ります</p>
+        </div>
+        <div class="lib-pl-grid" id="favPlGrid"></div>
+      </div>
+
+      <!-- ミックスお気に入り -->
+      <div id="favMixPanel" hidden>
+        <div class="lib-hist-toolbar" id="favMixToolbar" hidden>
+          <button class="lib-clear-btn" id="clearFavMixBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            まとめて削除
+          </button>
+        </div>
+        <div class="lib-empty" id="favMixEmpty" hidden>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="48" height="48"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+          <p>ハートを付けたミックスはまだありません</p>
+          <p class="lib-empty-hint">ミックスページでハートを押すとここに入ります</p>
+        </div>
+        <div class="lib-pl-grid" id="favMixGrid"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 新規プレイリスト作成モーダル -->
+  <div class="lib-modal-overlay" id="newPlModal" hidden>
+    <div class="lib-modal">
+      <h2 class="lib-modal-title">リストを作る</h2>
+      <input type="text" class="lib-modal-input" id="newPlInput" placeholder="リストの名前" maxlength="100" />
+      <div class="lib-modal-actions">
+        <button class="lib-modal-cancel" id="newPlCancel">キャンセル</button>
+        <button class="lib-modal-ok" id="newPlOk">作成</button>
+      </div>
+    </div>
+  </div>
+{% endblock %}

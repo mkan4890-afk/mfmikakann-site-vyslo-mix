@@ -1,0 +1,9 @@
+{
+  "name": "vyslo-mix-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VYSLO MIX gateway - selection portal + reverse proxy for VYSLO MUSIC / TUBE / CHAT / CLOUDMOON / UTOPIA",
+  "main": "gateway.js",
+  "scripts": { "start": "node gateway.js" },
+  "dependencies": { "http-proxy": "^1.18.1" }
+}

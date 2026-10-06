@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}ハッシュタグ — Vyslo Tube{% endblock %}
+{% block body_class %}page-hashtag{% endblock %}
+{% block content %}
+<main>
+    <div class="result-header" id="resultHeader" hidden>
+      <span id="resultInfo"></span>
+    </div>
+    <div id="resultGrid" class="video-grid"></div>
+    <div class="pagination" id="pagination" hidden>
+      <button id="prevBtn" class="page-btn" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+        ← 前へ
+      </button>
+      <span id="pageInfo" class="page-info"></span>
+      <button id="nextBtn" class="page-btn">
+        次へ →
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </main>
+{% endblock %}

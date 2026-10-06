@@ -1,0 +1,620 @@
+/* ==========================================================================
+   v2.3 修正用スタイル (既存スタイルの後に読み込み、必要な部分だけ上書き)
+   ========================================================================== */
+
+/* ── サイドバー: メニュー同士の余白をコンパクトに ── */
+.sidebar-nav { padding: 6px 10px 8px !important; gap: 1px !important; }
+.vy-side-sep { margin: 6px 0 !important; }
+.vy-side-label {
+  margin: 0 12px 1px !important;
+  padding-top: 2px !important;
+  font-size: .86rem !important;
+  line-height: 1.35;
+}
+/* マウス操作: 1 項目 32px (押し間違えない高さを保ったまま、なるべくスクロールせず見渡せるように) */
+.sidebar-nav-link.vy-side-item {
+  min-height: 32px !important;
+  height: 32px;
+  padding: 0 12px !important;
+}
+/* 指で操作する端末は押しやすさを優先して少しだけ高く */
+@media (pointer: coarse) {
+  .sidebar-nav-link.vy-side-item { min-height: 36px !important; height: 36px; }
+}
+.vy-side-foot { padding: 10px 22px 14px !important; }
+
+/* ── 履歴: 検索・すべて削除 ツールバー ── */
+body.page-history .vh-toolbar {
+  display: flex; align-items: center; justify-content: flex-start; gap: 10px;
+  flex-wrap: nowrap; margin: 0 0 18px; max-width: 720px;
+}
+body.page-history .vh-toolbar-end { justify-content: flex-start; }
+body.page-history .vh-search {
+  flex: 1 1 auto; max-width: none; height: 40px; box-sizing: border-box;
+  display: flex; align-items: center; gap: 10px; padding: 0 16px;
+  border-radius: 999px; background: var(--vy-panel-2); border: 1px solid var(--vy-border);
+  color: var(--vy-muted); transition: border-color .15s, background .15s, box-shadow .15s;
+}
+body.page-history .vh-search:hover { border-color: var(--vy-border-2); }
+body.page-history .vh-search:focus-within {
+  border-color: #8b5cf6; background: var(--vy-panel); box-shadow: 0 0 0 3px rgba(139, 92, 246, .18);
+}
+body.page-history .vh-search input {
+  flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: none;
+  color: var(--vy-text); font: inherit; font-size: .9rem;
+}
+body.page-history .vh-search input::placeholder { color: var(--vy-dim); opacity: 1; }
+body.page-history .vh-search input::-webkit-search-cancel-button { cursor: pointer; }
+body.page-history .lib-clear-btn.vh-clear {
+  flex: 0 0 auto; height: 40px; box-sizing: border-box; padding: 0 16px !important;
+  display: inline-flex; align-items: center; gap: 8px;
+  border-radius: 999px !important; border: 1px solid var(--vy-border) !important;
+  background: var(--vy-panel-2) !important; color: var(--vy-text) !important;
+  font-size: .86rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+}
+body.page-history .lib-clear-btn.vh-clear svg { color: var(--vy-danger, #fb7185); width: 16px; height: 16px; }
+body.page-history .lib-clear-btn.vh-clear:hover {
+  background: rgba(251, 113, 133, .12) !important; border-color: rgba(251, 113, 133, .5) !important;
+}
+[data-theme="light"] body.page-history .lib-clear-btn.vh-clear svg { color: #e11d48; }
+[data-theme="light"] body.page-history .lib-clear-btn.vh-clear:hover { background: #fff1f2 !important; border-color: #fda4af !important; color: #be123c !important; }
+@media (max-width: 520px) {
+  body.page-history .lib-clear-btn.vh-clear { padding: 0 13px !important; }
+}
+
+/* 履歴カードの補足 (視聴回数・日時のみ。再生範囲は出さない) */
+body.page-history .vh-info { padding: 2px 4px 8px 52px; gap: 4px; font-size: .74rem; color: var(--vy-muted); }
+body.page-history .vh-dot { opacity: .7; }
+body.page-history .vh-prog, body.page-history .vh-resume, body.page-history .vh-pct { display: none !important; }
+
+/* 履歴: ショート (通常のショート一覧と同じ 9:16 カード) */
+body.page-history .vh-shorts-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px 12px;
+}
+@media (max-width: 700px) {
+  body.page-history .vh-shorts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 8px; }
+}
+@media (min-width: 480px) and (max-width: 700px) {
+  body.page-history .vh-shorts-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+body.page-history .vh-short { position: relative; min-width: 0; }
+body.page-history .vh-short .short-card { width: 100%; min-width: 0; }
+body.page-history .vh-short .short-card-thumb { border-radius: 12px; margin-bottom: 8px; }
+body.page-history .vh-short .short-card-title { font-size: .86rem; color: var(--vy-text); }
+body.page-history .vh-short-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; font-size: .74rem; color: var(--vy-muted); }
+body.page-history .vh-short-ch { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.page-history .vh-short:hover .vh-del, body.page-history .vh-short .vh-del:focus-visible { opacity: 1; }
+body.page-history .vh-short .vh-short-meta { padding: 2px 9.6px 9px; }
+body.page-history .vh-search { min-width: 0; }
+@media (max-width: 520px) {
+  body.page-history .vh-toolbar { gap: 8px; }
+  body.page-history .vh-search { padding: 0 12px; }
+}
+/* ライトモードで非選択タブの件数が見えない */
+[data-theme="light"] body.page-history .lib-tab:not(.active) .lib-tab-count { color: var(--vy-muted) !important; background: var(--vy-panel-3) !important; }
+
+/* ── ライブラリ: お気に入り「すべて」 ── */
+body.page-library .fav-all-sec { margin: 0 0 28px; }
+body.page-library .fav-all-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 12px; }
+body.page-library .fav-all-title { display: flex; align-items: baseline; gap: 8px; margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--vy-text); }
+body.page-library .fav-all-n { font-size: .76rem; font-weight: 600; color: var(--vy-muted); }
+body.page-library .fav-all-more {
+  height: 32px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--vy-border);
+  background: var(--vy-panel-2); color: var(--vy-text); font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer;
+}
+body.page-library .fav-all-more:hover { background: var(--vy-panel-3); }
+
+/* ══════════════════════════════════════════════════════════
+   コメント (ロング動画): 本家 YouTube に近いパネル
+   - 動画の下に開く。背景の暗幕・スクロールロックなし
+   ══════════════════════════════════════════════════════════ */
+/* 旧フローティング表示のロックが残っていても効かないように */
+html.vy-float-lock:not(:has(.vy-float.open)) { overflow: auto !important; }
+
+#commentsPanel { margin: 16px 0 8px; }
+#commentsPanel[hidden] { display: none !important; }
+#commentsPanel.open { animation: vyCmtIn .18s ease-out; }
+@keyframes vyCmtIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+#commentsPanel .comments-section {
+  background: transparent !important; border: 0 !important; box-shadow: none !important;
+  padding: 0 !important; margin: 0 !important; border-radius: 0 !important;
+}
+#commentsPanel .comments-header {
+  position: sticky; top: var(--yt-head-h, 56px); z-index: 5;
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 !important; padding: 10px 0 12px;
+  background: var(--vy-bg); border-bottom: 1px solid var(--vy-border);
+}
+#commentsPanel .comments-title {
+  display: flex; align-items: baseline; gap: 8px; margin: 0 !important;
+  font-size: 1.15rem !important; font-weight: 700 !important; color: var(--vy-text) !important;
+}
+#commentsPanel .comments-count { font-size: .95rem; font-weight: 500; color: var(--vy-muted) !important; }
+#commentsPanel .comments-sort { display: flex; gap: 8px; margin: 0 !important; }
+#commentsPanel .sort-btn {
+  height: 32px; padding: 0 12px !important; border-radius: 8px !important;
+  border: 0 !important; background: var(--vy-panel-2) !important; color: var(--vy-text) !important;
+  font: inherit; font-size: .84rem !important; font-weight: 600 !important; cursor: pointer;
+  box-shadow: none !important; transition: background .12s;
+}
+#commentsPanel .sort-btn:hover { background: var(--vy-panel-3) !important; }
+#commentsPanel .sort-btn.active { background: var(--vy-text) !important; color: var(--vy-bg) !important; }
+#commentsPanel .vy-cmt-close {
+  margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 0;
+  display: inline-grid; place-items: center; cursor: pointer;
+  background: transparent; color: var(--vy-text);
+}
+#commentsPanel .vy-cmt-close:hover { background: var(--vy-panel-2); }
+
+#commentsPanel .comments-list { display: flex; flex-direction: column; gap: 0; padding-top: 12px; max-height: none !important; overflow: visible !important; }
+#commentsPanel .comment-item {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 10px 0 !important; margin: 0 !important;
+  background: transparent !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important;
+}
+#commentsPanel .comment-reply { gap: 12px; padding: 6px 0 !important; }
+
+/* アイコン: 押したときの反応がアイコンの形 (正円) どおりになるよう、箱をアイコンと同じ大きさに固定 */
+.comment-avatar-wrap {
+  flex: 0 0 auto !important; align-self: flex-start !important;
+  width: 40px !important; height: 40px !important; min-width: 0; min-height: 0;
+  border-radius: 50% !important; overflow: hidden; position: relative;
+  -webkit-tap-highlight-color: transparent; line-height: 0;
+}
+.comment-avatar-wrap img, .comment-avatar-wrap .comment-avatar, .comment-avatar-wrap .comment-avatar-placeholder {
+  width: 100% !important; height: 100% !important; border-radius: 50% !important; object-fit: cover;
+}
+body.page-shorts .comment-avatar-wrap { width: 32px !important; height: 32px !important; }
+#commentsPanel .comment-reply .comment-avatar-wrap { width: 24px !important; height: 24px !important; }
+#commentsPanel .comment-avatar-ph {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  background: linear-gradient(135deg, #7c3aed, #c026d3); color: #fff;
+  font-size: 1rem; font-weight: 700; line-height: 1;
+}
+#commentsPanel .comment-reply .comment-avatar-ph { font-size: .7rem; }
+#commentsPanel .comment-avatar { position: absolute; inset: 0; opacity: 0; transition: opacity .15s; }
+#commentsPanel .comment-avatar.loaded { opacity: 1; }
+
+#commentsPanel .comment-body { flex: 1 1 auto; min-width: 0; }
+#commentsPanel .comment-pinned {
+  display: flex; align-items: center; gap: 6px; margin: 0 0 4px;
+  font-size: .76rem; color: var(--vy-muted);
+}
+#commentsPanel .comment-header { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; margin: 0 0 2px; }
+#commentsPanel .comment-author {
+  font-size: .8rem !important; font-weight: 600 !important; color: var(--vy-text) !important; text-decoration: none;
+}
+#commentsPanel .comment-author.owner {
+  padding: 1px 8px; border-radius: 999px; background: var(--vy-panel-3); 
+}
+#commentsPanel .comment-author:hover { text-decoration: underline; }
+#commentsPanel .comment-verified { display: inline-flex; color: var(--vy-muted); }
+#commentsPanel .comment-date { font-size: .76rem !important; color: var(--vy-muted) !important; }
+#commentsPanel .comment-text {
+  font-size: .9rem !important; line-height: 1.5 !important; color: var(--vy-text) !important;
+  white-space: normal; overflow-wrap: anywhere; background: none !important;
+}
+#commentsPanel .comment-text.clamp { display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+#commentsPanel .comment-ts-link {
+  background: none; border: 0; padding: 0; font: inherit; cursor: pointer;
+  color: #3ea6ff !important;
+}
+[data-theme="light"] #commentsPanel .comment-ts-link { color: #065fd4 !important; }
+#commentsPanel .comment-more-btn {
+  margin: 4px 0 0; padding: 0; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: .84rem; font-weight: 600; color: var(--vy-muted);
+}
+#commentsPanel .comment-more-btn:hover { color: var(--vy-text); }
+#commentsPanel .comment-footer { display: flex; align-items: center; gap: 4px; margin: 4px 0 0 -8px; }
+#commentsPanel .comment-act {
+  display: inline-flex; align-items: center; gap: 4px; min-width: 32px; height: 32px; padding: 0 8px;
+  border-radius: 999px; font-size: .76rem; color: var(--vy-muted) !important; background: none !important;
+}
+#commentsPanel .comment-heart { position: relative; display: inline-flex; width: 24px; height: 24px; margin-left: 4px; }
+#commentsPanel .comment-heart img { width: 20px; height: 20px; border-radius: 50%; }
+#commentsPanel .comment-heart i { position: absolute; right: -3px; bottom: -3px; font-style: normal; font-size: 11px; color: #ff4e45; line-height: 1; }
+
+#commentsPanel .comment-replies-toggle,
+#commentsPanel .comment-replies-more {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; margin: 2px 0 0 -14px;
+  border: 0; border-radius: 999px; background: transparent; cursor: pointer;
+  font: inherit; font-size: .86rem; font-weight: 600; color: #3ea6ff;
+}
+[data-theme="light"] #commentsPanel .comment-replies-toggle,
+[data-theme="light"] #commentsPanel .comment-replies-more { color: #065fd4; }
+#commentsPanel .comment-replies-toggle:hover,
+#commentsPanel .comment-replies-more:hover { background: rgba(62, 166, 255, .15); }
+#commentsPanel .comment-replies-toggle svg { transition: transform .15s; }
+#commentsPanel .comment-replies-toggle.open svg { transform: rotate(180deg); }
+#commentsPanel .comment-replies-more[hidden], #commentsPanel .comment-replies-list[hidden] { display: none !important; }
+#commentsPanel .comment-replies-list { padding: 2px 0 0; }
+#commentsPanel .comment-replies-loading { padding: 10px 0; }
+#commentsPanel .comment-replies-error, #commentsPanel .comments-empty { font-size: .85rem; color: var(--vy-muted); padding: 8px 0; }
+#commentsPanel .comments-retry {
+  margin-left: 8px; height: 30px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--vy-border);
+  background: var(--vy-panel-2); color: var(--vy-text); font: inherit; font-size: .8rem; cursor: pointer;
+}
+.vy-cmt-spin {
+  display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+  border: 3px solid var(--vy-border-2); border-top-color: var(--vy-text); animation: vyCmtSpin .8s linear infinite;
+}
+@keyframes vyCmtSpin { to { transform: rotate(360deg); } }
+#commentsPanel .load-more-wrap { display: flex; justify-content: center; padding: 10px 0 4px; }
+#commentsPanel .load-more-wrap[hidden] { display: none !important; }
+#commentsPanel .load-more-btn {
+  height: 36px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--vy-border) !important;
+  background: var(--vy-panel-2) !important; color: var(--vy-text) !important; font-weight: 600; cursor: pointer;
+}
+#commentsPanel .comment-skeleton { padding: 10px 0; }
+
+/* コメントボタン: 開いている状態を分かりやすく */
+body.page-watch .watch-cmt-btn.active { background: var(--vy-text) !important; color: var(--vy-bg) !important; border-color: transparent !important; }
+body.page-watch .watch-cmt-btn.active .watch-cmt-count { color: inherit !important; opacity: .85; }
+
+/* 1 列表示 (スマホ・関連動画が下に来る) では、パネル内だけをスクロールして関連動画まで届きやすく */
+@media (max-width: 760px) {
+  #commentsPanel { margin: 10px 0 4px; border: 1px solid var(--vy-border); border-radius: 14px; background: var(--vy-panel); overflow: hidden; }
+  #commentsPanel .comments-header { position: static; padding: 10px 12px; background: var(--vy-panel); }
+  #commentsPanel .vy-cmt-scroll { max-height: min(62vh, 560px); overflow-y: auto; padding: 0 12px; -webkit-overflow-scrolling: touch; }
+  #commentsPanel .comment-item { gap: 12px; }
+  #commentsPanel .comment-avatar-wrap { width: 32px !important; height: 32px !important; }
+  #commentsPanel .comment-reply .comment-avatar-wrap { width: 24px !important; height: 24px !important; }
+  #commentsPanel .comments-title { font-size: 1rem !important; }
+}
+#commentsPanel .comment-pinned { background: none !important; border: 0 !important; padding: 0 !important; border-radius: 0 !important; width: auto !important; color: var(--vy-muted) !important; }
+@media (max-width: 760px) {
+  #commentsPanel .comments-header { row-gap: 8px; }
+  #commentsPanel .comments-title { order: 1; min-width: 0; }
+  #commentsPanel .vy-cmt-close { order: 2; width: 32px; height: 32px; }
+  #commentsPanel .comments-sort { order: 3; flex: 1 0 100%; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   動画上のコントロール
+   ══════════════════════════════════════════════════════════ */
+/* 幅が足りないときは JS (VyCtrlFit) が優先度の低いものから隠す。全画面ボタン等は常に残す */
+body.page-watch .vctrls-bar { min-width: 0; flex-wrap: nowrap; }
+body.page-watch .vctrls-left, body.page-watch .vctrls-right { flex-shrink: 0; min-width: 0; }
+body.page-watch .vctrls .vc-ovf-hide { display: none !important; }
+body.page-watch #vcFs, body.page-watch #vcPlay { flex-shrink: 0; }
+
+/* 「次の動画へ」「自動再生」: 他のボタンと同じ白黒のアイコン + 小さなスイッチ */
+body.page-watch .vctrls-btn.vc-tgl {
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  height: auto; padding: .35rem .4rem !important; margin: 0;
+  background: none !important; border: 0 !important; box-shadow: none !important; border-radius: 8px;
+  color: rgba(255, 255, 255, .92) !important; opacity: 1 !important;
+}
+body.page-watch .vctrls-btn.vc-tgl:hover { background: rgba(255, 255, 255, .12) !important; }
+body.page-watch .vctrls-btn.vc-tgl:focus-visible { outline: 2px solid rgba(255, 255, 255, .8); outline-offset: 1px; }
+body.page-watch .vc-tgl > svg { flex-shrink: 0; opacity: .75; transition: opacity .15s; }
+body.page-watch .vc-tgl.active > svg { opacity: 1; }
+body.page-watch .vc-mini-sw {
+  position: relative; flex-shrink: 0; width: 26px; height: 14px; border-radius: 999px;
+  background: rgba(255, 255, 255, .28); transition: background .15s;
+}
+body.page-watch .vc-mini-knob {
+  position: absolute; top: -2px; left: -2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #d9d9d9; box-shadow: 0 1px 3px rgba(0, 0, 0, .45); transition: transform .15s, background .15s;
+}
+body.page-watch .vc-tgl.active .vc-mini-sw { background: rgba(255, 255, 255, .6); }
+body.page-watch .vc-tgl.active .vc-mini-knob { transform: translateX(12px); background: #fff; }
+body.page-watch .vc-tgl:not(.active) .vc-mini-knob::after {
+  /* OFF のときはつまみに斜線: 色に頼らず状態が分かる */
+  content: ""; position: absolute; left: 4px; right: 4px; top: 8px; height: 2px; border-radius: 1px;
+  background: #555; transform: rotate(-45deg);
+}
+body.page-watch .vc-tgl.active .vc-mini-knob::after {
+  content: ""; position: absolute; left: 6px; top: 4px; width: 0; height: 0;
+  border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent #222;
+}
+.vc-sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* 画質メニュー: 項目が多くてもプレーヤーからはみ出さない */
+body.page-watch #vcQualPanel { max-height: min(340px, calc(var(--vy-player-h, 360px) - 70px)); overflow-y: auto; overscroll-behavior: contain; }
+body.page-watch #vcQualOpts .vy-q-checking { display: block; padding: 6px 12px; font-size: .74rem; opacity: .7; white-space: nowrap; }
+
+/* ── 引っ張って更新 (本家 YouTube 風の丸いインジケーター) ── */
+html.vy-ptr-on, html.vy-ptr-on body { overscroll-behavior-y: contain; }
+.vy-ptr {
+  position: fixed; left: 50%; top: 0; z-index: 1200;
+  width: 40px; height: 40px; pointer-events: none;
+  transform: translate(-50%, -48px) scale(.4); opacity: 0;
+  will-change: transform, opacity;
+}
+.vy-ptr:not(.vy-ptr-visible) { visibility: hidden; }
+.vy-ptr.vy-ptr-anim { transition: transform .24s cubic-bezier(.2,.8,.2,1), opacity .24s ease; }
+.vy-ptr-disc {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #282828; box-shadow: 0 1px 3px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.25);
+  display: flex; align-items: center; justify-content: center;
+}
+[data-theme="light"] .vy-ptr-disc { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25), 0 2px 8px rgba(0,0,0,.12); }
+.vy-ptr-svg { display: block; }
+.vy-ptr-rot { transform-origin: 20px 20px; }
+.vy-ptr-arc { stroke: #909090; transition: stroke .15s; }
+.vy-ptr-head { fill: #909090; transition: fill .15s; }
+.vy-ptr.vy-ptr-armed .vy-ptr-arc, .vy-ptr.vy-ptr-spinning .vy-ptr-arc { stroke: #f00; }
+.vy-ptr.vy-ptr-armed .vy-ptr-head { fill: #f00; }
+/* 更新中: 矢印を消して円弧がくるくる伸び縮みする */
+.vy-ptr.vy-ptr-spinning .vy-ptr-head { opacity: 0 !important; }
+.vy-ptr.vy-ptr-spinning .vy-ptr-svg { animation: vy-ptr-rotate 1.4s linear infinite; }
+.vy-ptr.vy-ptr-spinning .vy-ptr-rot { transform: rotate(-90deg) !important; }
+.vy-ptr.vy-ptr-spinning .vy-ptr-arc { animation: vy-ptr-dash 1.4s ease-in-out infinite; }
+@keyframes vy-ptr-rotate { to { transform: rotate(360deg); } }
+@keyframes vy-ptr-dash {
+  0%   { stroke-dasharray: 1 60; stroke-dashoffset: 0; }
+  50%  { stroke-dasharray: 40 60; stroke-dashoffset: -10; }
+  100% { stroke-dasharray: 40 60; stroke-dashoffset: -55; }
+}
+/* 旧インジケーターは使わない */
+#homePullSpinner, #ysPullRefresh { display: none !important; }
+
+/* ── LIVE ── */
+.vc-live-badge {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; margin-left: 4px;
+  border: 0; border-radius: 4px; background: transparent; color: #fff;
+  font: 600 .8rem/1 inherit; letter-spacing: .02em; cursor: pointer; white-space: nowrap;
+}
+.vc-live-badge:hover { background: rgba(255,255,255,.12); }
+.vc-live-badge[hidden] { display: none !important; }
+.vc-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #f00; }
+.vc-live-badge.behind .vc-live-dot { background: #aaa; }
+.vc-live-behind { font-weight: 500; opacity: .8; font-variant-numeric: tabular-nums; }
+.vc-live-behind[hidden] { display: none !important; }
+/* 配信中は再生時間 (総時間) の代わりにライブ表示 */
+#playerWrap.vy-is-live #vcTime { display: none !important; }
+
+/* 検索: 続きの読み込み失敗 */
+.ys-more-err { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 18px 0; color: var(--vy-muted, #aaa); font-size: .88rem; }
+.ys-more-err .ys-retry, .ys-error .ys-retry {
+  height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid var(--vy-line, rgba(255,255,255,.2));
+  background: transparent; color: var(--vy-text, inherit); font: 500 .86rem/1 inherit; cursor: pointer;
+}
+.ys-more-err .ys-retry:hover, .ys-error .ys-retry:hover { background: var(--vy-panel-3, rgba(255,255,255,.08)); }
+
+/* チャンネルホーム: 一時的な取得失敗 */
+.ch-home-error .ch-home-retry {
+  margin-top: 12px; height: 36px; padding: 0 18px; border-radius: 18px;
+  border: 1px solid var(--vy-line, rgba(255,255,255,.2)); background: transparent; color: var(--vy-text, inherit);
+  font: 500 .86rem/1 inherit; cursor: pointer;
+}
+.ch-home-error .ch-home-retry:hover { background: var(--vy-panel-3, rgba(255,255,255,.08)); }
+
+
+/* ── ダブルクリック/タップで10秒戻し・送り (本家YouTube風の波紋) ── */
+body.page-watch .vy-dtseek {
+  position: absolute; top: 0; bottom: 0; width: 38%;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 6; overflow: hidden;
+  opacity: 0; transition: opacity .25s ease;
+}
+body.page-watch .vy-dtseek.show { opacity: 1; transition: opacity .08s ease; }
+body.page-watch .vy-dtseek-left  { left: 0; }
+body.page-watch .vy-dtseek-right { right: 0; }
+body.page-watch .vy-dtseek-bg {
+  position: absolute; top: -10%; bottom: -10%; width: 100%;
+  background: rgba(255,255,255,.14);
+}
+body.page-watch .vy-dtseek-left  .vy-dtseek-bg { left: 0;  border-radius: 0 50% 50% 0 / 0 50% 50% 0; }
+body.page-watch .vy-dtseek-right .vy-dtseek-bg { right: 0; border-radius: 50% 0 0 50% / 50% 0 0 50%; }
+body.page-watch .vy-dtseek-in {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5);
+}
+body.page-watch .vy-dtseek-arrows { display: flex; gap: 0; }
+body.page-watch .vy-dtseek-left .vy-dtseek-arrows { flex-direction: row-reverse; }
+body.page-watch .vy-dtseek-arrows svg { opacity: .25; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+body.page-watch .vy-dtseek.show .vy-dtseek-arrows svg { animation: vyDtArrow .6s ease-in-out; }
+body.page-watch .vy-dtseek.show .vy-dtseek-arrows svg:nth-child(2) { animation-delay: .1s; }
+body.page-watch .vy-dtseek.show .vy-dtseek-arrows svg:nth-child(3) { animation-delay: .2s; }
+body.page-watch .vy-dtseek-txt { font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+body.page-watch .vy-dtseek.show .vy-dtseek-bg { animation: vyDtRipple .5s ease-out; }
+@keyframes vyDtArrow { 0% { opacity: .25; } 35% { opacity: 1; } 100% { opacity: .25; } }
+@keyframes vyDtRipple { 0% { background: rgba(255,255,255,.28); } 100% { background: rgba(255,255,255,.14); } }
+
+
+/* ── ショート: 上下の移動ボタンは操作ボタンの列から外し、本家のように右端へ独立配置 ── */
+body.page-shorts .sf-wrap { position: relative; }
+body.page-shorts .sf-navcol {
+  position: absolute; right: 24px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 16px; z-index: 66;
+}
+body.page-shorts .sf-navcol.sf-navcol-off { display: none; }
+body.page-shorts .sf-navcol .sf-nav-btn { width: 56px !important; height: 56px !important; }
+@media (max-width: 720px) {
+  body.page-shorts .sf-navcol { display: none; }   /* スマホはスワイプで移動 (今までどおり) */
+}
+
+
+/* ── 長押しで2倍速 ── */
+body.page-watch .player-wrap video { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+body.page-watch .vy-lp-badge {
+  position: absolute; top: 14px; left: 50%; transform: translate(-50%, -6px);
+  display: flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(0, 0, 0, .6); color: #fff; font-size: 13px; font-weight: 700;
+  pointer-events: none; z-index: 22; opacity: 0; transition: opacity .15s ease, transform .15s ease;
+}
+body.page-watch .vy-lp-badge.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ── 更新したあと、新しい一覧をふわっと表示 ── */
+@keyframes vyFreshIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.vy-fresh-in { animation: vyFreshIn .32s ease-out; }
+@media (prefers-reduced-motion: reduce) { .vy-fresh-in { animation: none; } }
+
+/* ── サイドバーがヘッダーから引き離されないように ──
+   ページ全体の弾むスクロール (端で伸びる動き) で、ページと一緒に動くヘッダーと
+   画面に固定されたサイドバーがずれて見えるのを防ぐ。サイドバーの中も弾ませない */
+html, html.vy-ptr-on { overscroll-behavior-y: none; }
+body, html.vy-ptr-on body { overscroll-behavior-y: auto; }
+html.vy-side-open .app-sidebar > .sidebar-nav { overscroll-behavior: none; }
+/* サイドバーを開いたときに html を overflow-x: clip にすると、body が独立したスクロール領域になり
+   ヘッダーの固定 (sticky) が効かなくなって、ページと一緒に上へ流れてしまう。
+   横はみ出しは body の overflow-x: hidden で防げているので、html は既定に戻す */
+html.vy-side-open { overflow-x: visible; }
+
+/* ── チャンネルの投稿 ── */
+body.page-channel .community-area { width: 100%; }
+body.page-channel .community-post { min-width: 0; }
+/* 本文は <br> で改行しているので、改行文字を二重に解釈しない */
+body.page-channel .community-post-content.community-html { white-space: normal; }
+body.page-channel .community-post-content.expanded { max-height: none; }
+body.page-channel .community-post-content a { color: var(--a2); word-break: break-all; }
+body.page-channel .community-attach { display: block; margin-top: .85rem; border-radius: 10px; overflow: hidden; }
+body.page-channel .community-attach img { display: block; width: 100%; height: 100%; object-fit: cover; margin: 0; border-radius: 0; background: var(--skeleton-base, rgba(255,255,255,.06)); }
+body.page-channel .community-attach-image { max-width: 520px; }
+body.page-channel .community-attach-image img { height: auto; max-height: 560px; object-fit: contain; }
+body.page-channel .community-attach-multi { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; max-width: 520px; }
+body.page-channel .community-attach-multi a { aspect-ratio: 1 / 1; overflow: hidden; }
+body.page-channel .community-attach-multi[data-count="1"] { grid-template-columns: 1fr; }
+body.page-channel .community-attach-multi[data-count="3"] a:first-child { grid-row: span 2; aspect-ratio: auto; }
+body.page-channel .community-attach-video {
+  display: flex; gap: .85rem; align-items: flex-start; max-width: 620px; padding: .6rem;
+  border: 1px solid var(--border); background: rgba(255,255,255,.03); color: inherit; text-decoration: none;
+}
+body.page-channel .community-attach-video:hover { background: rgba(255,255,255,.06); }
+body.page-channel .community-attach-thumb { position: relative; flex: 0 0 auto; width: 220px; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #000; }
+body.page-channel .community-attach-dur { position: absolute; right: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(0,0,0,.8); color: #fff; font-size: .72rem; font-weight: 600; }
+body.page-channel .community-attach-info { min-width: 0; flex: 1; }
+body.page-channel .community-attach-title { font-size: .9rem; font-weight: 600; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+body.page-channel .community-attach-meta { margin-top: .3rem; font-size: .76rem; color: var(--ch-text-dim, #aaa); display: flex; flex-wrap: wrap; gap: 0 .6rem; }
+body.page-channel .community-poll { display: flex; flex-direction: column; gap: 6px; max-width: 520px; overflow: visible; }
+body.page-channel .community-poll-choice { display: flex; align-items: center; gap: .6rem; padding: .55rem .8rem; border: 1px solid var(--border); border-radius: 8px; font-size: .86rem; }
+body.page-channel .community-poll-choice img { width: 40px; height: 40px; border-radius: 6px; flex: 0 0 auto; }
+body.page-channel .community-poll-total { font-size: .76rem; color: var(--ch-text-dim, #aaa); margin-top: 2px; }
+body.page-channel .community-replies { margin-left: .9rem; }
+@media (max-width: 600px) {
+  body.page-channel .community-post { padding: 1rem; }
+  body.page-channel .community-attach-video { flex-direction: column; }
+  body.page-channel .community-attach-thumb { width: 100%; }
+}
+
+/* 「次の動画へ」「自動再生」: 何のボタンか分かるよう、上に小さく名前を表示 (ボタンの高さはそのまま) */
+body.page-watch .vctrls-btn.vc-tgl:has(.vc-tgl-cap) {
+  display: inline-grid; grid-template-columns: auto auto; grid-template-rows: auto auto;
+  align-items: center; justify-items: center; column-gap: 6px; row-gap: 2px;
+  padding: .12rem .4rem .22rem !important; line-height: 1;
+}
+body.page-watch .vc-tgl-cap {
+  grid-column: 1 / -1; grid-row: 1;
+  font-size: 9.5px; font-weight: 700; line-height: 1; letter-spacing: .02em; white-space: nowrap;
+  color: rgba(255, 255, 255, .82); pointer-events: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+}
+body.page-watch .vc-tgl.active .vc-tgl-cap { color: #fff; }
+body.page-watch .vc-tgl:has(.vc-tgl-cap) > svg { grid-row: 2; width: 16px; height: 16px; }
+body.page-watch .vc-tgl:has(.vc-tgl-cap) > .vc-mini-sw { grid-row: 2; }
+
+/* プレイリストに保存のメニュー: 高さを制限したときは中をスクロール */
+body.page-watch .watch-pl-popup { overflow-y: auto; overscroll-behavior: contain; }
+
+/* チャンネルホームの注目動画: カード全体を押すと動画を開く */
+body.page-channel a.ch-featured-video { color: inherit; text-decoration: none; cursor: pointer; }
+body.page-channel a.ch-featured-video:hover .ch-featured-title { text-decoration: underline; }
+
+/* ── チャンネルホームの投稿 (本家 YouTube と同じ横並びのカード) ── */
+body.page-channel .ch-home-posts-row { gap: 16px !important; align-items: stretch; }
+body.page-channel .home-post-card {
+  flex: 0 0 auto; width: 400px; max-width: calc(100vw - 48px); height: 224px; box-sizing: border-box;
+  display: flex; flex-direction: column; padding: 14px 16px 6px; overflow: hidden;
+  border: 1px solid var(--vy-border, rgba(255,255,255,.12)); border-radius: 12px;
+  background: transparent; color: var(--vy-text, inherit); cursor: pointer; text-align: left;
+  transition: background .15s, border-color .15s;
+}
+body.page-channel .home-post-card:hover { background: var(--yt-hover, rgba(255,255,255,.06)); }
+body.page-channel .home-post-card:focus-visible { outline: 2px solid #a78bfa; outline-offset: 2px; }
+body.page-channel .hpc-head { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 8px; flex-shrink: 0; }
+body.page-channel .hpc-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--vy-panel-2, #222); }
+body.page-channel .hpc-name { font-size: .8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+body.page-channel .hpc-date { font-size: .75rem; color: var(--vy-muted, #aaa); white-space: nowrap; flex-shrink: 0; }
+body.page-channel .hpc-body { display: flex; gap: 12px; flex: 1 1 auto; min-height: 0; }
+body.page-channel .hpc-main { flex: 1 1 auto; min-width: 0; overflow: hidden; }
+body.page-channel .hpc-text {
+  font-size: .875rem; line-height: 1.43; word-break: break-word; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden;
+}
+body.page-channel .hpc-media { position: relative; flex: 0 0 auto; width: 120px; height: 120px; border-radius: 8px; overflow: hidden; background: var(--vy-panel-2, #222); }
+body.page-channel .hpc-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+body.page-channel .hpc-media-count {
+  position: absolute; right: 4px; bottom: 4px; padding: 1px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.72); color: #fff; font-size: .7rem; font-weight: 700;
+}
+body.page-channel .hpc-media-play { position: absolute; inset: 0; display: grid; place-items: center; }
+body.page-channel .hpc-media-play::before {
+  content: ""; width: 0; height: 0; border-style: solid; border-width: 9px 0 9px 15px;
+  border-color: transparent transparent transparent #fff; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7));
+}
+body.page-channel .hpc-poll { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+body.page-channel .hpc-poll-opt { font-size: .8rem; padding: 4px 8px; border: 1px solid var(--vy-border, rgba(255,255,255,.15)); border-radius: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.page-channel .hpc-poll-more, body.page-channel .hpc-poll-total { font-size: .75rem; color: var(--vy-muted, #aaa); }
+body.page-channel .hpc-foot { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-top: 4px; color: var(--vy-muted, #aaa); }
+body.page-channel .hpc-act { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px; font-size: .75rem; }
+body.page-channel .hpc-act:first-child { padding-left: 0; }
+@media (max-width: 600px) {
+  body.page-channel .home-post-card { width: 320px; height: 200px; padding: 12px 12px 4px; }
+  body.page-channel .hpc-media { width: 96px; height: 96px; }
+  body.page-channel .hpc-text { -webkit-line-clamp: 5; }
+}
+
+/* チャンネルの再生リストタブ: タイトルの下に本数 (左の狭い列に押し込まれないように) */
+body.page-channel .video-card:has(> .playlist-thumb-wrap) > .card-info { display: flex !important; flex-direction: column; gap: 4px; grid-template-columns: none !important; }
+body.page-channel .video-card:has(> .playlist-thumb-wrap) > .card-info > * { grid-column: auto !important; width: auto; }
+
+/* ── ライブチャット (配信中の動画) ───────────────────────── */
+.vy-lc { border: 1px solid var(--border-2); border-radius: 12px; background: var(--surface); margin: 0 0 12px; overflow: hidden; display: flex; flex-direction: column; }
+.vy-lc[hidden] { display: none !important; }
+.vy-lc-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--border); }
+.vy-lc-title { font-weight: 700; font-size: 0.92rem; display: flex; align-items: center; gap: 7px; color: var(--text); margin-right: auto; white-space: nowrap; }
+.vy-lc-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2d2d; box-shadow: 0 0 0 3px rgba(255,45,45,.18); animation: vyLcPulse 1.6s ease-in-out infinite; }
+@keyframes vyLcPulse { 50% { opacity: .45; } }
+.vy-lc-mode { background: var(--surface2); color: var(--text); border: 1px solid var(--border-2); border-radius: 8px; padding: 4px 6px; font-size: 0.8rem; max-width: 140px; }
+.vy-lc-fold { background: none; border: none; color: var(--text2); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; flex-shrink: 0; }
+.vy-lc-fold:hover { background: var(--surface2); color: var(--text); }
+.vy-lc-fold svg { transition: transform .2s; }
+.vy-lc.folded .vy-lc-fold svg { transform: rotate(180deg); }
+.vy-lc.folded .vy-lc-body { display: none; }
+.vy-lc.folded .vy-lc-head { border-bottom: none; }
+.vy-lc-body { position: relative; height: min(520px, 62vh); display: flex; flex-direction: column; }
+.vy-lc-list { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 6px 0 8px; scrollbar-width: thin; }
+.vy-lc-status { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; color: var(--text3); font-size: 0.85rem; padding: 0 16px; pointer-events: none; }
+.vy-lc-status[hidden] { display: none; }
+.vy-lc-jump { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); display: flex; align-items: center; gap: 5px; border: none; border-radius: 999px; padding: 6px 12px; background: var(--surface3); color: var(--text); font-size: 0.78rem; box-shadow: 0 4px 14px rgba(0,0,0,.35); cursor: pointer; }
+.vy-lc-jump[hidden] { display: none; }
+.vy-lc-item { padding: 4px 14px; font-size: 0.84rem; line-height: 1.45; color: var(--text); word-break: break-word; }
+.vy-lc-text { display: flex; align-items: flex-start; gap: 10px; }
+.vy-lc-text.by-owner { background: rgba(255, 214, 0, .06); }
+.vy-lc-avatar { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; object-fit: cover; background: var(--surface2); display: inline-block; }
+.vy-lc-line { min-width: 0; flex: 1; padding-top: 2px; }
+.vy-lc-author { color: var(--text3); font-weight: 500; margin-right: 6px; }
+.vy-lc-author.is-member { color: #2ba640; }
+.vy-lc-author.is-mod { color: #5e84f1; }
+.vy-lc-author.is-owner { background: #ffd600; color: #111; border-radius: 3px; padding: 0 4px; }
+.vy-lc-ic { vertical-align: -2px; margin-right: 4px; color: #5e84f1; }
+.vy-lc-badge { width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+.vy-lc-emoji { width: 22px; height: 22px; vertical-align: -6px; margin: 0 1px; object-fit: contain; }
+.vy-lc-paid, .vy-lc-member { padding: 4px 10px; }
+.vy-lc-paid-head, .vy-lc-member-head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; color: #fff; }
+.vy-lc-paid-head { border-radius: 8px 8px 0 0; }
+.vy-lc-paid-head:last-child { border-radius: 8px; }
+.vy-lc-paid-body { padding: 6px 12px 9px; border-radius: 0 0 8px 8px; color: #fff; }
+.vy-lc-paid-who, .vy-lc-member-who { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.vy-lc-paid-name, .vy-lc-member-name { font-size: 0.78rem; opacity: .85; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vy-lc-paid-amount { font-weight: 700; font-size: 0.88rem; }
+.vy-lc-paid .vy-lc-avatar, .vy-lc-member .vy-lc-avatar { width: 32px; height: 32px; }
+.vy-lc-sticker { width: 56px; height: 56px; object-fit: contain; }
+.vy-lc-member-head { background: #0f9d58; border-radius: 8px 8px 0 0; }
+.vy-lc-member-head:last-child { border-radius: 8px; }
+.vy-lc-member-text { font-weight: 600; font-size: 0.84rem; }
+.vy-lc-member-body { background: #0b8043; color: #fff; padding: 6px 12px 9px; border-radius: 0 0 8px 8px; }
+@media (max-width: 900px) {
+  .vy-lc { margin: 0 0 10px; }
+  .vy-lc-body { height: min(380px, 52vh); }
+}
+
+/* LIVE を埋め込みプレーヤーで再生中: 通常動画の黒画面・エラー表示・操作バーを重ねない */
+body.vy-live-embed #videoPlayer,
+body.vy-live-embed #playerError,
+body.vy-live-embed #playerSkeleton,
+body.vy-live-embed #vctrls { display: none !important; }

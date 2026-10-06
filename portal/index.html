@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<script>
+/* =====================================================================
+   VYSLO MIX アカウント同期 (サブ URL 側)
+   同じ端末・同じブラウザなら、どの URL から開いても同じアカウント (CHAT など) にする。
+   ・このブラウザが自分で始めた同期 (sessionStorage の合言葉が一致) だけを取り込む。
+     他人から送られたリンクを開いても、他人のアカウントにはならない。
+   ・IP アドレスや端末の機種では判定しないので、同じ学校・職場の別の人とは混ざらない。
+   ===================================================================== */
+(function () {
+  "use strict";
+  var PRIMARY = "https://mfmikakann-site-vyslo-mix-10032028.up.railway.app";
+  var COOKIES = ["vyslo_uid", "vyslo_devkey", "vyslo_hcode"];
+  var KEEP = { vyslo_view: 1 };
+  var SYNC_EVERY = 30 * 60 * 1000;
+  var PENDING = "vyslo_sync_nonce";
+  var done = function () {};
+  window.__vysloSyncReady = new Promise(function (r) { done = r; });
+
+  var embedded = true;
+  try { embedded = window.self !== window.top; } catch (e) {}
+  if (location.origin === PRIMARY || embedded || location.protocol !== "https:") { done(); return; }
+
+  function cookieGet(n) {
+    var m = document.cookie.match(new RegExp("(?:^|;\\s*)" + n + "=([^;]+)"));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+  function cookieSet(n, v) {
+    document.cookie = n + "=" + encodeURIComponent(v) + "; path=/; max-age=63072000; SameSite=Lax; Secure";
+  }
+  function ssGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  function ssDel(k) { try { sessionStorage.removeItem(k); } catch (e) {} }
+  function markSynced() {
+    ssSet("vyslo_sync_done", "1");
+    try { localStorage.setItem("vyslo_sync_at", String(Date.now())); } catch (e) {}
+  }
+  function hide() { document.documentElement.style.visibility = "hidden"; }
+  function show() { document.documentElement.style.visibility = ""; }
+
+  var url = new URL(location.href);
+  var ids = url.searchParams.get("__ids");
+
+  // ---- メイン URL から戻ってきたところ ----
+  if (ids !== null) {
+    // トークンは URL からすぐ消す (履歴や外部への送信に残さない)
+    url.searchParams.delete("__ids");
+    try { history.replaceState(null, "", url.pathname + url.search + url.hash); } catch (e) {}
+    var pend = null;
+    try { pend = JSON.parse(ssGet(PENDING) || "null"); } catch (e) {}
+    ssDel(PENDING);
+    // このブラウザが始めた同期でなければ何もしない (他人のリンク対策)
+    if (!pend || !pend.n || Date.now() - pend.at > 120000) { done(); return; }
+    markSynced();
+    if (!/^[0-9a-f]{48}$/.test(ids)) { done(); return; }
+    hide();
+    fetch(PRIMARY + "/__idsync/get?t=" + encodeURIComponent(ids), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("sync " + r.status); return r.json(); })
+      .then(function (d) {
+        if (!d || d.n !== pend.n) return;              // 合言葉が違うものは取り込まない
+        var ls = d.ls || {};
+        var mainUid = ls.uid || (d.ck && d.ck.vyslo_uid) || "";
+        var curUid = "";
+        try { curUid = localStorage.getItem("uid") || cookieGet("vyslo_uid") || ""; } catch (e) {}
+        if (!mainUid || mainUid === curUid) return;
+        // こちらの古いアカウント情報を消して、メイン URL と同じ内容にする
+        var keep = {};
+        Object.keys(KEEP).forEach(function (k) { var v = localStorage.getItem(k); if (v != null) keep[k] = v; });
+        try { localStorage.clear(); } catch (e) {}
+        Object.keys(keep).forEach(function (k) { localStorage.setItem(k, keep[k]); });
+        Object.keys(ls).forEach(function (k) { try { localStorage.setItem(k, ls[k]); } catch (e) {} });
+        COOKIES.forEach(function (n) {
+          if (d.ck && d.ck[n]) cookieSet(n, d.ck[n]);
+          else document.cookie = n + "=; path=/; max-age=0";
+        });
+        markSynced();
+        // 古いアカウントのログイン情報 (Firebase) を消して、同じアカウントで入り直す
+        return new Promise(function (res) {
+          try {
+            var q = indexedDB.deleteDatabase("firebaseLocalStorageDb");
+            q.onsuccess = q.onerror = q.onblocked = function () { res(); };
+            setTimeout(res, 2000);
+          } catch (e) { res(); }
+        });
+      })
+      .catch(function () {})
+      .then(function () { show(); done(); });
+    return;
+  }
+
+  // ---- まだ同期していない → メイン URL へ一瞬だけ移動 ----
+  var recent = false;
+  try {
+    recent = ssGet("vyslo_sync_done") === "1" ||
+      (Date.now() - Number(localStorage.getItem("vyslo_sync_at") || 0) < SYNC_EVERY);
+  } catch (e) {}
+  if (recent || !window.crypto || !crypto.getRandomValues) { done(); return; }
+
+  var a = new Uint8Array(16); crypto.getRandomValues(a);
+  var nonce = Array.prototype.map.call(a, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+  ssSet(PENDING, JSON.stringify({ n: nonce, at: Date.now() }));
+  hide();
+  var u = new URL(PRIMARY + "/portal/sync.html");
+  u.searchParams.set("action", "pull");
+  u.searchParams.set("r", location.href);
+  u.searchParams.set("n", nonce);
+  location.replace(u.toString());
+})();
+</script>
+<link rel="icon" href="/portal/favicon.ico?v=20261004" sizes="32x32" />
+<link rel="shortcut icon" href="/portal/favicon.ico?v=20261004" />
+<link rel="apple-touch-icon" href="/portal/apple-touch-icon.png?v=20261004" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#ffffff" />
+<title>Google</title>
+<meta name="description" content="Google" />
+<meta property="og:title" content="Google" />
+<meta name="apple-mobile-web-app-title" content="Google" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" />
+<style>
+:root {
+  --bg: #0e0a17;
+  --panel: #181127;
+  --input: #0c0815;
+  --border: #34274f;
+  --text: #f1ecf8;
+  --muted: #b3a6c9;
+  --dim: #7f7299;
+  --accent: #d946ef;
+  --violet: #8b5cf6;
+  --ok: #34d399;
+  --grad: linear-gradient(135deg, #8b5cf6 0%, #c026d3 100%);
+  --grad-hot: linear-gradient(135deg, #8b5cf6 0%, #d946ef 55%, #ec4899 100%);
+  --shadow: 0 12px 32px rgba(0, 0, 0, .42);
+  --glow: 0 8px 28px rgba(139, 92, 246, .38);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+/* ---------- top bar ---------- */
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 52px;
+  padding: 0 10px;
+  background: rgba(14, 10, 23, .92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  z-index: 10;
+  flex: none;
+}
+#bar .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: Outfit, sans-serif;
+  font-weight: 900;
+  font-size: 17px;
+  letter-spacing: .06em;
+  padding: 6px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+#bar .brand:hover { background: var(--panel); }
+#bar .brand img { width: 26px; height: 26px; }
+#bar .brand .mix {
+  background: var(--grad-hot);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.tabbtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: all .18s ease;
+  white-space: nowrap;
+}
+.tabbtn svg { width: 16px; height: 16px; }
+.tabbtn:hover { color: var(--text); background: var(--panel); }
+.tabbtn.active {
+  color: #fff;
+  background: var(--grad);
+  box-shadow: var(--glow);
+  border-color: rgba(217, 70, 239, .35);
+}
+.spacer { flex: 1; }
+#newtab {
+  display: flex; align-items: center; gap: 6px;
+  height: 34px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--input); color: var(--muted);
+  font-family: inherit; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: all .18s ease; white-space: nowrap;
+}
+#newtab[hidden], #bar[hidden] { display: none !important; }
+#newtab:hover { color: var(--text); border-color: var(--violet); }
+/* ---------- selection screen ---------- */
+#select {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 40px 20px;
+  position: relative;
+}
+/* スクロール可能な状態でもコンテンツが中央に来るように */
+#select .hero { margin-top: auto; }
+#select .cards { margin-bottom: auto; }
+#select::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(600px 320px at 20% -10%, rgba(139, 92, 246, .18), transparent 60%),
+    radial-gradient(520px 300px at 85% 110%, rgba(217, 70, 239, .14), transparent 60%);
+  pointer-events: none;
+}
+.hero { text-align: center; position: relative; z-index: 1; }
+.hero .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.hero img { width: 58px; height: 58px; filter: drop-shadow(0 4px 18px rgba(139,92,246,.45)); }
+.hero h1 {
+  font-family: Outfit, sans-serif;
+  font-weight: 900;
+  font-size: clamp(30px, 6vw, 46px);
+  letter-spacing: .08em;
+}
+.hero h1 .mix {
+  background: var(--grad-hot);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero p { color: var(--muted); margin-top: 10px; font-size: 14.5px; }
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-top: 38px;
+  position: relative;
+  z-index: 1;
+  width: min(960px, 100%);
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, rgba(24, 17, 39, .95), rgba(12, 8, 21, .95));
+  border: 1px solid var(--border);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  overflow: hidden;
+  width: 100%;
+}
+.card::before {
+  content: "";
+  position: absolute; inset: 0 auto 0 0; width: 4px;
+  background: var(--c, var(--grad));
+  opacity: .9;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--violet); box-shadow: var(--shadow), var(--glow); }
+.card .ic {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #0b0b14;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  overflow: hidden;
+  flex: none;
+}
+.card .ic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card .ic.ic-pad img { width: 62%; height: 62%; object-fit: contain; }
+.card .body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.card h2 { font-family: Outfit, sans-serif; font-weight: 800; font-size: 19px; letter-spacing: .05em; }
+.card .tag {
+  position: absolute; top: 14px; right: 16px;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  color: var(--dim); border: 1px solid var(--border);
+  border-radius: 999px; padding: 3px 9px;
+  flex: none;
+}
+.card p { color: var(--muted); font-size: 13px; line-height: 1.65; }
+.card .go {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 800; color: var(--accent);
+  white-space: nowrap;
+  flex: none;
+  margin-left: auto;
+  padding-left: 18px;
+}
+/* ---------- app frame ---------- */
+#frameWrap { flex: 1; display: none; position: relative; }
+#frameWrap.show { display: block; }
+#appFrame { width: 100%; height: 100%; border: 0; background: #fff; }
+#loading {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  background: var(--bg); color: var(--muted);
+  font-size: 13px; letter-spacing: .1em;
+  flex-direction: column; gap: 14px;
+}
+#loading.show { display: flex; }
+.spinner {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--violet);
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+footer {
+  position: relative; z-index: 1;
+  margin-top: 34px; color: var(--dim); font-size: 11.5px;
+  letter-spacing: .06em; text-align: center;
+}
+.scratch-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 14px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--input);
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all .18s ease;
+  position: relative;
+  z-index: 1;
+}
+.scratch-link:hover {
+  color: var(--text);
+  border-color: var(--violet);
+}
+.scratch-link svg { width: 13px; height: 13px; }
+/* top bar version */
+#bar .scratch-link {
+  margin: 0;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 11.5px;
+}
+#bar .scratch-link svg { width: 14px; height: 14px; }
+/* embedded (portal shown inside an app iframe) */
+body.embedded #bar { display: none; }
+body.embedded #select { padding-top: 28px; }
+body.embedded #select .hero { margin-top: 0; }
+body.embedded .hero h1 { font-size: 26px; }
+body.embedded footer { display: none; }
+@media (max-width: 640px) {
+  #newtab span { display: none; }
+  .tabbtn { padding: 0 10px; font-size: 12.5px; }
+  .cards { grid-template-columns: 1fr; }
+  .card { flex-wrap: wrap; gap: 12px; }
+  .card .body { flex-basis: 100%; order: 2; }
+  .card .go { margin-left: 0; padding-left: 0; }
+}
+
+/* ---------- view toggle ---------- */
+.viewbar {
+  position: relative; z-index: 1;
+  width: min(960px, 100%);
+  display: flex; justify-content: flex-end;
+  margin-top: 30px;
+}
+.viewtoggle {
+  display: inline-flex; gap: 4px; padding: 4px;
+  border: 1px solid var(--border); border-radius: 999px;
+  background: var(--input);
+}
+.viewtoggle button {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 14px; border: 0; border-radius: 999px;
+  background: transparent; color: var(--muted);
+  font-family: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: .04em;
+  cursor: pointer; transition: all .18s ease;
+}
+.viewtoggle button svg { width: 15px; height: 15px; }
+.viewtoggle button:hover { color: var(--text); }
+.viewtoggle button.active { color: #fff; background: var(--grad); box-shadow: var(--glow); }
+.viewbar + .cards { margin-top: 14px; }
+/* ---------- thumbnail view ---------- */
+.cards.thumb { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 16px; }
+.cards.thumb .card {
+  flex-direction: column; align-items: center; text-align: center;
+  gap: 14px; padding: 30px 16px 20px;
+}
+.cards.thumb .card::before { inset: 0 0 auto 0; width: auto; height: 4px; }
+.cards.thumb .card .ic { width: 104px; height: 104px; }
+.cards.thumb .card .body { align-items: center; flex: 1; }
+.cards.thumb .card .tag { top: 12px; right: 12px; }
+.cards.thumb .card p { font-size: 12.5px; }
+.cards.thumb .card .go { margin-left: 0; padding-left: 0; }
+@media (max-width: 640px) {
+  .cards.thumb { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .cards.thumb .card { flex-wrap: nowrap; padding: 26px 12px 16px; }
+  .cards.thumb .card .ic { width: 84px; height: 84px; }
+  .cards.thumb .card .body { flex-basis: auto; order: 0; }
+  .viewtoggle button span { display: none; }
+}
+</style>
+</head>
+<body>
+  <nav id="bar" hidden>
+    <div class="brand" id="homeBtn" title="選択画面へ">
+      <span>VYSLO <span class="mix">MIX</span></span>
+    </div>
+    <button class="tabbtn" data-app="chat" title="VYSLO チャットを開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      CHAT
+    </button>
+    <button class="tabbtn" data-app="tube" title="VYSLO TUBE を開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="4"/></svg>
+      TUBE
+    </button>
+    <button class="tabbtn" data-app="music" title="VYSLO MUSIC を開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      MUSIC
+    </button>
+    <button class="tabbtn" data-app="cloudmoon" title="VYSLO CLOUDMOON を開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.152A4 4 0 0 0 17.32 5z"/></svg>
+      CLOUDMOON
+    </button>
+    <button class="tabbtn" data-app="utopia" title="VYSLO UTOPIA を開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+      UTOPIA
+    </button>
+    <div class="spacer"></div>
+    <a class="scratch-link" href="https://scratch.mit.edu/users/MFmikakann/" target="_blank" rel="noopener" title="制作者のScratch">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94"/><path d="M9.69 8h11.48"/><path d="M7.38 12l5.74-9.94"/><path d="M9.69 16L3.95 6.06"/><path d="M14.31 16H2.83"/><path d="M16.62 12l-5.74 9.94"/></svg>
+      Scratch
+    </a>
+    <button id="newtab" hidden title="現在のアプリを新しいタブで開く">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      <span>新しいタブ</span>
+    </button>
+  </nav>
+
+  <main id="select">
+    <div class="hero">
+      <h1>VYSLO <span class="mix">MIX</span></h1>
+      <p>使いたいサービスを選んでください。いつでも上のバーで切り替えできます。</p>
+    </div>
+    <div class="viewbar">
+      <div class="viewtoggle" role="group" aria-label="表示切り替え">
+        <button type="button" data-view="thumb" title="サムネイル表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg><span>サムネイル</span></button>
+        <button type="button" data-view="list" title="リスト表示"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg><span>リスト</span></button>
+      </div>
+    </div>
+    <div class="cards thumb">
+      <button class="card" data-app="chat" style="--c: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%)">
+        <span class="ic"><img src="/portal/chat-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">CHAT</span><h2>VYSLO CHAT</h2><p>チャットサイト。みんなとおしゃべりを楽しもう。</p></span>
+        <span class="go">開く →</span>
+      </button>
+      <button class="card" data-app="tube" style="--c: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%)">
+        <span class="ic"><img src="/portal/tube-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">VIDEO</span><h2>VYSLO TUBE</h2><p>動画の検索・視聴・ショート・ライブまで。お気に入りの動画を見つけよう。</p></span>
+        <span class="go">開く →</span>
+      </button>
+      <button class="card" data-app="music" style="--c: linear-gradient(135deg, #8b5cf6 0%, #c026d3 100%)">
+        <span class="ic"><img src="/portal/music-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">MUSIC</span><h2>VYSLO MUSIC</h2><p>登録不要の無料音楽プレーヤー。好きな曲を検索して、そのまま再生できます。</p></span>
+        <span class="go">開く →</span>
+      </button>
+      <button class="card" data-app="cloudmoon" style="--c: linear-gradient(135deg, #14b8a6 0%, #0891b2 100%)">
+        <span class="ic"><img src="/portal/cloudmoon-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">GAME</span><h2>VYSLO CLOUDMOON</h2><p>クラウドゲーム。ダウンロード不要でブラウザからゲームをプレイできる。</p></span>
+        <span class="go">開く →</span>
+      </button>
+      <button class="card" data-app="utopia" style="--c: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)">
+        <span class="ic ic-pad"><img src="/portal/utopia-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">LEARN</span><h2>VYSLO UTOPIA</h2><p>教育サイト。学校の科目や学習リソースをまとめて学べる。</p></span>
+        <span class="go">開く →</span>
+      </button>
+    </div>
+    <footer>VYSLO MIX — CHAT / TUBE / MUSIC / CLOUDMOON / UTOPIA</footer>
+    <a class="scratch-link" href="https://scratch.mit.edu/users/MFmikakann/" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94"/><path d="M9.69 8h11.48"/><path d="M7.38 12l5.74-9.94"/><path d="M9.69 16L3.95 6.06"/><path d="M14.31 16H2.83"/><path d="M16.62 12l-5.74 9.94"/></svg>
+      制作者: Scratch
+    </a>
+  </main>
+
+  <div id="frameWrap">
+    <iframe id="appFrame" title="VYSLO アプリ" allow="camera; microphone; autoplay; clipboard-read; clipboard-write; fullscreen; encrypted-media; picture-in-picture" referrerPolicy="same-origin" src="about:blank"></iframe>
+    <div id="loading"><div class="spinner"></div><span id="loadingLabel">読み込み中…</span></div>
+  </div>
+
+<script>
+(function () {
+  // タブ名は常に「Google」
+  var TAB_TITLE = "Google";
+  if (window.self === window.top) {
+    document.title = TAB_TITLE;
+    new MutationObserver(function () { if (document.title !== TAB_TITLE) document.title = TAB_TITLE; })
+      .observe(document.querySelector("title"), { childList: true, characterData: true, subtree: true });
+  }
+  var APP_PATHS = { music: "/music/", tube: "/tube/", chat: "/chat/", cloudmoon: "/cloudmoon/", utopia: "/utopia/" };
+  var APP_LABELS = { music: "VYSLO MUSIC", tube: "VYSLO TUBE", chat: "VYSLO CHAT", cloudmoon: "VYSLO CLOUDMOON", utopia: "VYSLO UTOPIA" };
+  var embedded = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+  if (embedded) document.body.classList.add("embedded");
+
+  var bar = document.getElementById("bar");
+  var selectView = document.getElementById("select");
+  var frameWrap = document.getElementById("frameWrap");
+  var frame = document.getElementById("appFrame");
+  var loading = document.getElementById("loading");
+  var loadingLabel = document.getElementById("loadingLabel");
+  var newtab = document.getElementById("newtab");
+  // 表示切り替え (サムネイル / リスト)。初期はサムネイル、選択は保存
+  var cardsEl = document.querySelector(".cards");
+  var viewBtns = document.querySelectorAll(".viewtoggle button");
+  function setView(v) {
+    if (v !== "list") v = "thumb";
+    cardsEl.classList.toggle("thumb", v === "thumb");
+    viewBtns.forEach(function (b) { b.classList.toggle("active", b.dataset.view === v); b.setAttribute("aria-pressed", b.dataset.view === v); });
+    try { localStorage.setItem("vyslo_view", v); } catch (e) {}
+  }
+  var savedView = "thumb";
+  try { savedView = localStorage.getItem("vyslo_view") || "thumb"; } catch (e) {}
+  setView(savedView);
+  viewBtns.forEach(function (b) { b.addEventListener("click", function () { setView(b.dataset.view); }); });
+  var current = null;
+
+  // 全画面モード (?full=1): 上の切り替えバーを出さずにアプリだけを表示
+  var fullMode = new URLSearchParams(location.search).get("full") === "1";
+  if (!embedded && !fullMode) bar.hidden = false;
+
+  function openApp(key, push, innerPath) {
+    if (!APP_PATHS[key]) return;
+    current = key;
+    newtab.hidden = false;
+    // ゲートウェイは Cookie (vyslo_app) でアプリを切り替えるため、
+    // アプリは常にルート "/" で読み込む (アプリ内 SPA ルーターの 404 回避)
+    document.cookie = "vyslo_app=" + key + "; path=/; max-age=31536000; samesite=lax";
+    document.querySelectorAll(".tabbtn").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.app === key);
+    });
+    selectView.style.display = "none";
+    frameWrap.classList.add("show");
+    loadingLabel.textContent = APP_LABELS[key] + " を読み込み中…";
+    loading.classList.add("show");
+    frame.src = (innerPath && innerPath.charAt(0) === "/" && innerPath.charAt(1) !== "/") ? innerPath : "/";
+    if (push && window.history && window.history.replaceState) {
+      window.history.replaceState(null, "", "/?app=" + key);
+    }
+  }
+
+  function showSelect() {
+    current = null;
+    newtab.hidden = true;
+    document.querySelectorAll(".tabbtn").forEach(function (b) { b.classList.remove("active"); });
+    frameWrap.classList.remove("show");
+    frame.src = "about:blank";
+    selectView.style.display = "flex";
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState(null, "", "/");
+    }
+  }
+
+  frame.addEventListener("load", function () {
+    if (frame.src !== "about:blank") loading.classList.remove("show");
+  });
+
+  document.querySelectorAll("[data-app]").forEach(function (el) {
+    el.addEventListener("click", function () { openApp(el.dataset.app, true); });
+  });
+  document.getElementById("homeBtn").addEventListener("click", showSelect);
+
+  newtab.addEventListener("click", function () {
+    if (!current) return;
+    // いま開いているページを、URLが about:blank の新しいタブに全画面で表示する
+    var inner = "";
+    try {
+      var loc = frame.contentWindow.location;
+      if (loc.pathname && loc.pathname !== "/" && loc.href.indexOf("about:") !== 0) inner = loc.pathname + loc.search;
+    } catch (e) {}
+    var target = new URL("/?app=" + current + "&full=1" + (inner ? "&p=" + encodeURIComponent(inner) : ""), location.href).href;
+    var baseDpr = window.devicePixelRatio || 1;
+    var appKey = current;
+    var iconUrl = new URL("/portal/" + appKey + "-icon.png?v=20261004", location.href).href;
+    var w = window.open("about:blank", "_blank");
+    if (!w) { window.open(target, "_blank", "noopener"); return; }
+    var d = w.document;
+    d.open();
+    d.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><title>' + (document.title || "VYSLO MIX") + '</title>' +
+      '<style>html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{position:fixed;left:0;top:0;width:100vw;height:100vh;border:0;transform-origin:0 0}</style></head><body></body></html>');
+    d.close();
+
+    // タブのアイコン: Chrome は about:blank のアイコンを覚えているので、
+    // 画像データ(data URL)で何回か付け直して確実に上書きする
+    function setIcon(href) {
+      try {
+        d.querySelectorAll('link[rel~="icon"],link[rel="apple-touch-icon"]').forEach(function (l) { l.parentNode.removeChild(l); });
+        ["icon", "shortcut icon", "apple-touch-icon"].forEach(function (rel) {
+          var l = d.createElement("link");
+          l.rel = rel;
+          l.type = "image/png";
+          l.href = href;
+          d.head.appendChild(l);
+        });
+      } catch (e) {}
+    }
+    setIcon(iconUrl);
+    var iconData = iconCache[appKey];
+    function applyIconData() { if (!iconData) return; [0, 300, 1000, 2500, 5000].forEach(function (t) { w.setTimeout(function () { setIcon(iconData); }, t); }); }
+    if (iconData) applyIconData();
+    else loadIconData(appKey).then(function (u) { iconData = u; applyIconData(); });
+
+    var f = d.createElement("iframe");
+    // ズーム: Chrome は about:blank のズーム倍率を別に覚えているので、
+    // 元のタブと同じ大きさになるように中身を拡大・縮小して合わせる
+    function fit() {
+      var z = baseDpr / (w.devicePixelRatio || 1);
+      if (!(z > 0.2 && z < 5) || Math.abs(z - 1) < 0.01) z = 1;
+      f.style.transform = z === 1 ? "" : "scale(" + z + ")";
+      f.style.width = (100 / z) + "vw";
+      f.style.height = (100 / z) + "vh";
+    }
+    fit();
+    // タブが表示されてズームが反映されるまで数秒間は合わせ直す
+    var fitUntil = 0;
+    function startFit() { if (!fitUntil) fitUntil = Date.now() + 4000; }
+    if (d.visibilityState === "visible") startFit();
+    d.addEventListener("visibilitychange", function () { if (d.visibilityState === "visible") { startFit(); fit(); } });
+    w.addEventListener("resize", function () { if (!fitUntil || Date.now() < fitUntil) fit(); });
+    var fitTimer = w.setInterval(function () { fit(); if (fitUntil && Date.now() > fitUntil) w.clearInterval(fitTimer); }, 200);
+
+    f.src = target;
+    f.setAttribute("allow", "autoplay; fullscreen; clipboard-read; clipboard-write; microphone; camera; gamepad; encrypted-media; picture-in-picture");
+    f.setAttribute("allowfullscreen", "");
+    d.body.appendChild(f);
+    try { w.opener = null; } catch (e) {}
+  });
+
+  // 新しいタブ用のアイコン画像を先に読み込んでおく
+  var iconCache = {};
+  function loadIconData(key) {
+    return fetch("/portal/" + key + "-icon.png?v=20261004").then(function (r) { return r.blob(); }).then(function (b) {
+      return new Promise(function (res) { var fr = new FileReader(); fr.onload = function () { iconCache[key] = fr.result; res(fr.result); }; fr.onerror = function () { res(null); }; fr.readAsDataURL(b); });
+    }).catch(function () { return null; });
+  }
+  ["chat", "tube", "music", "cloudmoon", "utopia"].forEach(function (k) { loadIconData(k); });
+
+  // アカウント同期が終わってからアプリを開く
+  var syncReady = window.__vysloSyncReady || Promise.resolve();
+  var syncDone = false;
+  syncReady.then(function () { syncDone = true; });
+  document.querySelectorAll("[data-app]").forEach(function (el) {
+    el.addEventListener("click", function (ev) {
+      if (!syncDone) { ev.stopImmediatePropagation(); syncReady.then(function () { openApp(el.dataset.app, true); }); }
+    }, true);
+  });
+  syncReady.then(function () {
+    // ?app= パラメータで直接開く (/music/ 等のエントリURLからのリダイレクト含む)
+    var params = new URLSearchParams(location.search);
+    var appParam = params.get("app");
+    if (appParam && APP_PATHS[appParam] && !embedded) {
+      openApp(appParam, false, params.get("p"));
+      if (params.get("p") && window.history && window.history.replaceState) {
+        window.history.replaceState(null, "", "/?app=" + appParam + (fullMode ? "&full=1" : ""));
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

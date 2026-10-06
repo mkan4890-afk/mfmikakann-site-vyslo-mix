@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ログイン — Vyslo Tube</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/img/vyslo-icon-192.png" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0a17;
+      --accent: #7c3aed;
+      --accent-bright: #d946ef;
+      --cyan: #f0abfc;
+      --pink: #c084fc;
+      --text: #f3eefb;
+      --muted: #b3a6c9;
+      --border: rgba(192, 132, 252, 0.22);
+      --border-glow: rgba(232, 121, 249, 0.55);
+      --surface: rgba(24, 17, 39, 0.86);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(900px 600px at 10% -10%, rgba(139,92,246,0.14), transparent 60%),
+        radial-gradient(700px 500px at 90% 0%, rgba(124,58,237,0.18), transparent 65%),
+        var(--bg);
+      background-attachment: fixed;
+      font-family: 'Outfit', 'Zen Kaku Gothic New', system-ui, sans-serif;
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* ─── CANVAS ─── */
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    /* ─── INTRO OVERLAY ─── */
+    #intro {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      pointer-events: none;
+    }
+
+    .intro-logo {
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      letter-spacing: 0.04em;
+      line-height: 1;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .intro-logo.visible { opacity: 1; transform: translateY(0); }
+    .intro-logo .logo-inv { color: var(--accent-bright); }
+    .intro-logo .logo-tube { color: var(--cyan); }
+
+    .intro-tagline {
+      font-size: 0.85rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      opacity: 0;
+      transition: opacity 0.5s ease 0.3s;
+    }
+    .intro-tagline.visible { opacity: 1; }
+
+    .intro-bar {
+      width: min(260px, 60vw);
+      height: 2px;
+      background: rgba(124,58,237,0.18);
+      border-radius: 999px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.4s ease 0.5s;
+    }
+    .intro-bar.visible { opacity: 1; }
+    .intro-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 1.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(139,92,246,0.7);
+    }
+
+    .intro-hint {
+      font-size: 0.72rem;
+      color: rgba(148,163,184,0.5);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    .intro-hint.visible { opacity: 1; }
+
+    /* Glitch flicker effect on logo */
+    @keyframes glitch1 {
+      0%,95%,100% { clip-path: none; transform: none; }
+      96% { clip-path: inset(20% 0 60% 0); transform: translateX(-4px); }
+      97% { clip-path: inset(50% 0 20% 0); transform: translateX(4px); }
+      98% { clip-path: inset(10% 0 80% 0); transform: translateX(-2px); }
+      99% { clip-path: none; transform: none; }
+    }
+    .glitch-active { animation: glitch1 0.25s steps(1) forwards; }
+
+    /* ─── MAIN PAGE ─── */
+    #mainPage {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.7s ease;
+      overflow-y: auto;
+    }
+    #mainPage.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .login-wrap {
+      width: min(420px, 92vw);
+      padding: 2.4rem 2.2rem 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 1px rgba(192,132,252,0.08),
+        0 0 40px rgba(124,58,237,0.3),
+        0 0 80px rgba(139,92,246,0.12),
+        0 8px 32px rgba(0,0,0,0.6);
+      transform: translateY(24px) scale(0.97);
+      transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.7s ease;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      position: relative;
+    }
+    #mainPage.visible .login-wrap {
+      transform: translateY(0) scale(1);
+    }
+
+    /* card glow corner */
+    .login-wrap::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(139,92,246,0.28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .login-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 160px; height: 160px;
+      background: radial-gradient(circle, rgba(167,139,250,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 1.8rem;
+    }
+    .login-logo {
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.03em;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .login-logo .logo-inv { color: var(--accent-bright); }
+    .login-logo .logo-tube { color: var(--cyan); }
+
+    .login-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    /* divider */
+    .login-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.6rem;
+    }
+    .login-divider::before,
+    .login-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+    .login-divider span {
+      font-size: 0.68rem;
+      color: rgba(148,163,184,0.4);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* form */
+    .login-form { display: flex; flex-direction: column; gap: 1rem; }
+
+    .field-wrap { display: flex; flex-direction: column; gap: 0.32rem; }
+
+    .field-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+    }
+
+    .field-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 0.85rem;
+      color: rgba(148,163,184,0.45);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .field-input {
+      width: 100%;
+      padding: 0.72rem 0.9rem 0.72rem 2.4rem;
+      background: rgba(5, 9, 20, 0.7);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    .field-input::placeholder { color: rgba(148,163,184,0.35); }
+    .field-input:focus {
+      border-color: rgba(139,92,246,0.55);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12), 0 0 16px rgba(124,58,237,0.15);
+    }
+    .field-input:focus ~ .field-icon { color: var(--accent-bright); }
+    .field-input-wrap:focus-within .field-icon { color: var(--accent-bright); }
+
+    /* password toggle */
+    .pw-toggle {
+      position: absolute;
+      right: 0.75rem;
+      background: none;
+      border: none;
+      color: rgba(148,163,184,0.4);
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 6px;
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+    }
+    .pw-toggle:hover { color: var(--accent-bright); }
+
+    /* options row */
+    .login-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+    }
+
+    .login-remember {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .login-remember input[type="checkbox"] {
+      appearance: none;
+      width: 15px; height: 15px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(14,10,23,0.6);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .login-remember input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .login-remember input[type="checkbox"]:checked::after {
+      content: '';
+      display: block;
+      width: 4px; height: 7px;
+      border: 2px solid #fff;
+      border-top: none; border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+
+    .login-forgot {
+      color: rgba(192,132,252,0.7);
+      text-decoration: none;
+      font-size: 0.74rem;
+      transition: color 0.2s;
+    }
+    .login-forgot:hover { color: var(--accent-bright); }
+
+    /* submit button */
+    .login-btn {
+      margin-top: 0.4rem;
+      padding: 0.82rem;
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      border: none;
+      border-radius: 10px;
+      color: #f3eefb;
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(124,58,237,0.4);
+    }
+    .login-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .login-btn:hover {
+      opacity: 0.92;
+      transform: translateY(-1px);
+      box-shadow: 0 0 30px rgba(139,92,246,0.55);
+    }
+    .login-btn:active { transform: translateY(0); opacity: 1; }
+
+    .login-btn.loading { pointer-events: none; }
+    .login-btn.loading .btn-text { opacity: 0; }
+    .login-btn.loading .btn-spinner { opacity: 1; }
+
+    .btn-text { transition: opacity 0.2s; }
+    .btn-spinner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .btn-spinner-ring {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* error message */
+    .login-error {
+      font-size: 0.76rem;
+      color: #f87171;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 8px;
+      padding: 0.55rem 0.75rem;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: opacity 0.25s, max-height 0.25s;
+    }
+    .login-error.show { opacity: 1; max-height: 60px; }
+
+    /* scan-line overlay */
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+    }
+  
+    /* Vyslo: ガラス調カード */
+    .login-card, .quiz-card, .card { border-radius: 24px !important; backdrop-filter: blur(14px); }
+    .login-title, .quiz-title { letter-spacing: -.01em !important; font-weight: 800 !important; }
+    button[type="submit"], .login-btn, .submit-btn { border-radius: 14px !important; background: linear-gradient(135deg,#7c3aed,#c026d3) !important; }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="scanlines"></div>
+
+<!-- INTRO ANIMATION -->
+<div id="intro">
+  <div class="intro-logo" id="introLogo">
+    <img class="vy-logo-img" src="/static/img/vyslo-icon-128.png" alt="Vyslo Tube" width="40" height="40" /><span class="logo-inv">Vyslo</span><span class="logo-tube">Tube</span>
+  </div>
+  <div class="intro-tagline" id="introTagline">VYSLO へようこそ</div>
+  <div class="intro-bar" id="introBar">
+    <div class="intro-bar-fill" id="introBarFill"></div>
+  </div>
+  <div class="intro-hint" id="introHint">ようこそ</div>
+</div>
+
+<!-- MAIN LOGIN PAGE -->
+<div id="mainPage">
+  <div class="login-wrap">
+    <div class="login-header">
+      <span class="login-logo">
+        <img class="vy-logo-img" src="/static/img/vyslo-icon-128.png" alt="Vyslo Tube" width="40" height="40" /><span class="logo-inv">Vyslo</span><span class="logo-tube">Tube</span>
+      </span>
+      <div class="login-subtitle">メンバー専用</div>
+    </div>
+
+    <div class="login-divider"><span>ログイン</span></div>
+
+    <div class="login-error" id="loginError">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="loginErrorText">パスワードが違うようです</span>
+    </div>
+
+    <form class="login-form" id="loginForm" autocomplete="off">
+      <div class="field-wrap">
+        <label class="field-label" for="password">パスコード</label>
+        <div class="field-input-wrap">
+          <svg class="field-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input class="field-input" type="password" id="password" name="password" placeholder="パスワード" autocomplete="off" />
+          <button type="button" class="pw-toggle" id="pwToggle" aria-label="表示する">
+            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="login-options">
+        <label class="login-remember">
+          <input type="checkbox" id="rememberMe" />
+          次回から自動で入る
+        </label>
+        <a href="/forgot" class="login-forgot">忘れたときは</a>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <span class="btn-text">ログイン</span>
+        <div class="btn-spinner"><div class="btn-spinner-ring"></div></div>
+      </button>
+    </form>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  /* ─── BACKGROUND PARTICLES ─── */
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles, nodes;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles = Array.from({length: 80}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      a: Math.random(),
+      hue: Math.random() < 0.6 ? 'warm' : 'gold',
+    }));
+    nodes = Array.from({length: 22}, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.15,
+      vy: (Math.random() - 0.5) * 0.15,
+    }));
+  }
+
+  function drawFrame() {
+    ctx.clearRect(0, 0, W, H);
+
+    /* node connections */
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 160) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(124,58,237,${0.12 * (1 - dist/160)})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        }
+      }
+      const n = nodes[i];
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+    }
+
+    /* particles */
+    for (const p of particles) {
+      const color = p.hue === 'warm'
+        ? `rgba(139,92,246,${p.a * 0.55})`
+        : `rgba(167,139,250,${p.a * 0.45})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      p.x += p.vx; p.y += p.vy;
+      p.a += (Math.random() - 0.5) * 0.04;
+      p.a = Math.max(0.1, Math.min(1, p.a));
+      if (p.x < -5) p.x = W+5;
+      if (p.x > W+5) p.x = -5;
+      if (p.y < -5) p.y = H+5;
+      if (p.y > H+5) p.y = -5;
+    }
+
+    /* subtle radial glow */
+    const gr = ctx.createRadialGradient(W*0.5, H*0.5, 0, W*0.5, H*0.5, Math.min(W,H)*0.7);
+    gr.addColorStop(0, 'rgba(139,92,246,0.04)');
+    gr.addColorStop(1, 'transparent');
+    ctx.fillStyle = gr;
+    ctx.fillRect(0, 0, W, H);
+
+    requestAnimationFrame(drawFrame);
+  }
+
+  resize();
+  initParticles();
+  drawFrame();
+  window.addEventListener('resize', () => { resize(); initParticles(); });
+
+  /* ─── INTRO SEQUENCE ─── */
+  const intro = document.getElementById('intro');
+  const introLogo = document.getElementById('introLogo');
+  const introTagline = document.getElementById('introTagline');
+  const introBar = document.getElementById('introBar');
+  const introBarFill = document.getElementById('introBarFill');
+  const introHint = document.getElementById('introHint');
+  const mainPage = document.getElementById('mainPage');
+
+  const hints = ['ようこそ', '準備しています…', 'もうすぐです…', 'どうぞ'];
+
+  let hintIdx = 0;
+  let hintTimer;
+
+  function cycleHint() {
+    hintIdx++;
+    if (hintIdx < hints.length) {
+      introHint.textContent = hints[hintIdx];
+      hintTimer = setTimeout(cycleHint, 420);
+    }
+  }
+
+  /* glitch burst */
+  function glitch(el) {
+    el.classList.add('glitch-active');
+    setTimeout(() => el.classList.remove('glitch-active'), 260);
+  }
+
+  /* Step 1: show logo */
+  setTimeout(() => {
+    introLogo.classList.add('visible');
+    glitch(introLogo);
+  }, 200);
+
+  /* Step 2: tagline */
+  setTimeout(() => {
+    introTagline.classList.add('visible');
+  }, 650);
+
+  /* Step 3: progress bar appears + fills */
+  setTimeout(() => {
+    introBar.classList.add('visible');
+    introHint.classList.add('visible');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        introBarFill.style.width = '100%';
+      });
+    });
+    hintTimer = setTimeout(cycleHint, 420);
+  }, 900);
+
+  /* Step 4: glitch flash then transition */
+  setTimeout(() => {
+    clearTimeout(hintTimer);
+    introHint.textContent = 'READY';
+    glitch(introLogo);
+  }, 2400);
+
+  setTimeout(() => {
+    /* fade out intro */
+    intro.style.transition = 'opacity 0.5s ease';
+    intro.style.opacity = '0';
+    intro.style.pointerEvents = 'none';
+
+    /* reveal main */
+    mainPage.classList.add('visible');
+  }, 2700);
+
+  /* ─── LOGIN FORM ─── */
+  const form = document.getElementById('loginForm');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const loginErrorText = document.getElementById('loginErrorText');
+  const pwToggle = document.getElementById('pwToggle');
+  const pwInput = document.getElementById('password');
+  const eyeIcon = document.getElementById('eyeIcon');
+
+  function showError(msg) {
+    loginErrorText.textContent = msg;
+    loginError.classList.add('show');
+  }
+
+  function hideError() {
+    loginError.classList.remove('show');
+  }
+
+  /* clear error when user types */
+  pwInput.addEventListener('input', hideError);
+
+  /* password visibility toggle */
+  pwToggle.addEventListener('click', () => {
+    const isPassword = pwInput.type === 'password';
+    pwInput.type = isPassword ? 'text' : 'password';
+    eyeIcon.innerHTML = isPassword
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  });
+
+  /* form submit — calls /api/login */
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const password = pwInput.value.trim();
+    const remember = document.getElementById('rememberMe').checked;
+
+    loginBtn.classList.add('loading');
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, remember }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        loginBtn.classList.remove('loading');
+        loginBtn.querySelector('.btn-text').innerHTML = '<svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg> 認証完了';
+        loginBtn.style.background = 'linear-gradient(135deg, #059669, #7c3aed)';
+        loginBtn.style.boxShadow = '0 0 20px rgba(5,150,105,0.4)';
+        setTimeout(() => {
+          window.location.href = data.redirect || '/';
+        }, 700);
+      } else {
+        loginBtn.classList.remove('loading');
+        showError(data.message || 'パスワードが違うようです');
+      }
+    } catch (err) {
+      loginBtn.classList.remove('loading');
+      showError('ネットワークエラーが発生しました');
+    }
+  });
+})();
+</script>
+</body>
+</html>

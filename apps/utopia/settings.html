@@ -1,0 +1,164 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta name="description" content="An educational website full of school topics and academic resources. The perfect place for students to learn.">
+  <meta name="keywords" content="math, science, ela, social studies, school, study">
+  <meta name="language" content="English">
+  <meta name="author" content="Utopia">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Utopia">
+  <meta property="og:description" content="An educational website full of school topics and academic resources. The perfect place for students to learn.">
+  <meta property="og:image" content="/favicon.ico">
+  <title>Utopia - Settings</title>
+  <link rel="icon" type="image/png" href="favicon.ico">
+  <link href="/css/style.css" rel="stylesheet" type="text/css" />
+  <link href="/css/nav.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,300,0,0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap" rel="stylesheet">
+  <script src="/js/all.js"></script>
+  
+  
+  <script>
+    /* local build: force direct proxy navigation, no cloak / no tab wrapper */
+    try {
+      localStorage.setItem("ab_cloak", "false");
+      localStorage.setItem("tabs", "false");
+      if (localStorage.getItem("auto_cloak") !== "true") localStorage.setItem("auto_cloak", "false");
+      localStorage.setItem("ads", "true");
+    } catch (e) {}
+  </script>
+</head>
+<body class="future1">
+  <script src="/js/all_body.js"></script>
+  <script src="classes/balance.js"></script>
+  <script src="classes/calculus.js"></script>
+  <navbar class="navbar">
+    
+  </navbar>
+  <script src="/js/ub/nav.js"></script>
+  
+  <div class="horizon-center">
+    <div id="mainContent">
+        <span class="title" id="settings">Settings</span><br>
+        <div class="settings">
+          <div class="setting">
+            <p id="name">Hidden Mode</p>
+            <p>Prevents extensions from seeing what you do. Hides everything you do here from your history when searching.</p>
+            <p id="openBlank"><span class="material-symbols-outlined">open_in_new</span>&nbsp;Open in about:blank</p>
+            <input type="checkbox" id="ab_cloak" checked/><label for="ab_cloak"></label>
+            <p id="saved">Saved!</p>
+          </div>
+          <div class="setting">
+            <p id="name" style="top: 7px;">Tab Cloak</p>
+            <p style="top:calc(25%);transform:none;font-size:14px;">Disguises the tab as something else, even in about:blank.</p>
+            <span id="details">
+              <p style="font-weight: bold;padding-bottom: 3px;">Presets:</p>
+              <img class="tab" id="Google" src="/img/google.png" width="32" draggable="false">
+              <img class="tab" id="Home" src="/img/classroom.png" width="32" draggable="false">
+              <img class="tab" id="Home_-_Google_Drive" src="/img/drive.png" width="32" draggable="false">
+              <img class="tab" id="Gmail" src="/img/gmail.png" width="32" draggable="false">
+              <img class="tab" id="Dashboard_|_Khan_Academy" src="/img/khan.png" width="32" draggable="false">
+              <img class="tab" id="Home_|_Schoology" src="/img/schoology.png" width="32" draggable="false">
+              <img class="tab" id="Clever_|_Portal" src="/img/clever.png" width="32" draggable="false">
+              <br><p style="margin-top: 5px;"><span id="detailBtn">Custom Tab Cloak</span><span id="removeBtn"><img id="cancel" src="/img/cancel.png" width="10" style="margin-top:-2px;" draggable="false"> Remove Cloak</span></p>
+              <p style="font-size: 12px;margin-top: 5px;padding: 0 10px;"><span style="font-weight: bold;">Current Cloak:</span>&nbsp;&nbsp;<span style="text-decoration:underline">Icon:</span>&nbsp;&nbsp;<span id="cloakIcon">none</span>,&nbsp;&nbsp;<span style="text-decoration:underline">Title:</span>&nbsp;<span id="cloakTitle">none</span></p>
+            </span>
+          </div>
+          <div class="setting">
+            <p id="name">Quick Links</p>
+            <p>Turn this on to add links that can be accessed quickly via "Quick Links" in the navbar.</p>
+            <p class="quickies" style="margin-top:60px;display:none;"><span id="detailBtn" class="add">Add Quick Links</span>&nbsp;&nbsp;&nbsp;<span id="detailBtn" class="rm">Remove Quick Links</span></p>
+            <input type="checkbox" id="quick_links" checked/><label for="quick_links"></label>
+            <p id="saved">Saved!</p>
+          </div>
+          <div class="setting">
+            <p id="name">Automatic Hidden Mode</p>
+            <p style="margin-top:8px">Activates Hidden Mode immediately and opens in about:blank. Works best if popups aren't blocked.</p>
+            <input type="checkbox" id="auto_cloak"/><label for="auto_cloak"></label>
+            <p id="saved">Saved!</p>
+          </div>
+          <div class="setting">
+            <p id="name">Anti-Closing</p>
+            <p style="margin-top:8px">Prevents extensions (such as GoGuardian) from closing the tab by showing the "Leave Site?" popup.</p>
+            <input type="checkbox" id="anti_close"/><label for="anti_close"></label>
+            <p id="saved">Saved!</p>
+          </div>
+          <div class="setting">
+            <p id="name">Theme</p>
+            <p style="margin-top:8px">Change the theme of the entire website with our many options.</p>
+            <select id="theme">
+              <option value="blue">Utopia Blue</option>
+              <option value="og">OG</option>
+              <option value="darkred">Dark Red</option>
+              <option value="snow">Snow</option>
+              <option value="midnight">Midnight</option>
+              <option value="future1" selected>Futuristic (default)</option>
+              <option value="future2">Futuristic 2</option>
+              <option value="future3">Futuristic 3</option>
+              <option value="future4">Futuristic 4</option>
+              
+            </select>
+            
+          </div>
+
+          <div class="setting">
+            <p id="name">Search Engine</p>
+            <p style="margin-top:8px">Change the default search engine.</p>
+            <p style="font-size: 12px;margin-top: 70px;padding: 0 10px;"><span style="font-weight: bold;">Search Engine:</span>&nbsp;<span id="selected-engine"></span></p>
+            <select id="search_engine">
+              <option value="ggl">Google</option>
+              <option value="ddg" selected>DuckDuckGo</option>
+            </select>
+            <p id="saved">Saved!</p>
+          </div>
+
+          <div class="setting">
+            <p id="name">Tabs System</p>
+            <p style="margin-top:8px">While browsing, show the site URL, title, and icon. Allows for easy & convenient navigation.</p>
+            <input type="checkbox" id="tabs" checked/><label for="tabs"></label>
+            <p id="saved">Saved!</p>
+            
+          </div>
+          
+          <div class="setting">
+            <p id="name">Experimental Ad Blocker</p>
+            <p style="margin-top:8px">Blocks ads on all websites. Works very well and rarely causes unexpected results.</p>
+            <input type="checkbox" id="ad_block" checked/><label for="ad_block"></label>
+            <p id="saved">Saved!</p>
+          </div>
+
+          <div class="setting">
+            <p id="name">Dev Tools</p>
+            <p style="margin-top:8px">Allows you to open up a dev panel on the &#112;‍&#114;‍<sc>&#111;‍&#120;</sc><sc>&#121;</sc> by clicking the cog icon in the bottom right while browsing.</p>
+            <input type="checkbox" id="dev_tools"/><label for="dev_tools"></label>
+            <p id="saved">Saved!</p>
+          </div>
+
+
+        </div>
+    </div>
+  </div>
+  
+  <script src="/js/settings.js"></script>
+  
+  <div class="facts">
+    <h1>Schoolwork: ELA, Science, History, Math, Literature, Social Studies, and Writing</h1>
+    <h1>School has many educational resources where you can learn, study, and gain knowledge.</h1>
+    <h1>Research historical events. Analyze scientific experiments. Explain the historical importance. Solve with the quadratic formula. Find the theme of the literature. Learn about George Washington in social studies. Write an essay about educational degrees.</h1>
+  </div>
+  <script src="/js/all_end.js"></script>
+
+  <!--<script data-cfasync='false' type='text/javascript' src='//jurysupposedshooter.com/56/54/3c/56543caf593f12cd9e9ac4d0035347ff.js'></script>-->
+  <!-- inter -->
+  <!--<script data-cfasync='false' type='text/javascript' src='//jurysupposedshooter.com/00/e6/b0/00e6b0e8312a5558a5ab9a706f586ccb.js'></script>-->
+</body>
+</html>

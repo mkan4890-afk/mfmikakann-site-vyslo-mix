@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>認証クイズ — Vyslo Tube</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/img/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/img/vyslo-icon-192.png" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0a17;
+      --accent: #7c3aed;
+      --accent-bright: #d946ef;
+      --cyan: #f0abfc;
+      --pink: #c084fc;
+      --text: #f3eefb;
+      --muted: #b3a6c9;
+      --border: rgba(192, 132, 252, 0.22);
+      --border-glow: rgba(232, 121, 249, 0.55);
+      --surface: rgba(24, 17, 39, 0.86);
+    }
+
+    html, body {
+      width: 100%; min-height: 100%;
+      background:
+        radial-gradient(900px 600px at 10% -10%, rgba(139,92,246,0.14), transparent 60%),
+        radial-gradient(700px 500px at 90% 0%, rgba(124,58,237,0.18), transparent 65%),
+        var(--bg);
+      background-attachment: fixed;
+      font-family: 'Outfit', 'Zen Kaku Gothic New', system-ui, sans-serif;
+      color: var(--text);
+    }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+    }
+
+    .scanlines {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+    }
+
+    #pageWrap {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .quiz-card {
+      width: min(560px, 96vw);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 1px rgba(192,132,252,0.08),
+        0 0 40px rgba(124,58,237,0.3),
+        0 0 80px rgba(139,92,246,0.12),
+        0 8px 32px rgba(0,0,0,0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 2.4rem 2.2rem 2rem;
+      position: relative;
+    }
+
+    .quiz-card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 180px; height: 180px;
+      background: radial-gradient(circle, rgba(139,92,246,0.28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .quiz-header {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .quiz-logo {
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      font-size: 1.5rem;
+      letter-spacing: 0.03em;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+    .quiz-logo .logo-inv { color: var(--accent-bright); }
+    .quiz-logo .logo-tube { color: var(--cyan); }
+
+    .quiz-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+    }
+
+    .quiz-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin: 1.4rem 0;
+    }
+    .quiz-divider::before,
+    .quiz-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+    .quiz-divider span {
+      font-size: 0.68rem;
+      color: rgba(148,163,184,0.4);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .quiz-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+
+    /* loading */
+    #loadingState {
+      text-align: center;
+      padding: 2rem;
+    }
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(192,132,252,0.2);
+      border-top-color: var(--accent-bright);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+    }
+
+    /* error */
+    #errorState {
+      display: none;
+      text-align: center;
+      padding: 1.5rem;
+    }
+    .error-text {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    /* questions */
+    #quizState { display: none; }
+
+    .progress-bar-wrap {
+      height: 4px;
+      background: rgba(124,58,237,0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 1.4rem;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+      box-shadow: 0 0 8px rgba(139,92,246,0.6);
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+    }
+    .score-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+    }
+    .q-counter {
+      font-size: 0.72rem;
+      color: rgba(148,163,184,0.5);
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+    }
+
+    .question-text {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+      font-weight: 500;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .choice-btn {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: rgba(5, 9, 20, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.85rem;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.1s;
+      font-family: inherit;
+      line-height: 1.4;
+    }
+    .choice-btn:hover:not(:disabled) {
+      border-color: rgba(192,132,252,0.5);
+      background: rgba(124,58,237,0.15);
+      transform: translateX(3px);
+    }
+    .choice-btn.correct {
+      border-color: #059669;
+      background: rgba(5,150,105,0.15);
+      color: #6ee7b7;
+    }
+    .choice-btn.wrong {
+      border-color: rgba(248,113,113,0.4);
+      background: rgba(248,113,113,0.08);
+      color: #f87171;
+    }
+    .choice-btn.reveal-correct {
+      border-color: rgba(5,150,105,0.4);
+      background: rgba(5,150,105,0.08);
+    }
+    .choice-btn:disabled { cursor: default; }
+
+    .feedback-msg {
+      margin-top: 0.8rem;
+      font-size: 0.78rem;
+      font-family: 'Outfit', 'Zen Kaku Gothic New', sans-serif;
+      min-height: 1.2em;
+      transition: opacity 0.2s;
+    }
+    .feedback-msg.correct { color: #6ee7b7; }
+    .feedback-msg.wrong { color: #f87171; }
+
+    .next-btn {
+      margin-top: 1.2rem;
+      width: 100%;
+      padding: 0.78rem;
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      border: none;
+      border-radius: 10px;
+      color: #f3eefb;
+      font-size: 0.88rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 20px rgba(124,58,237,0.4);
+      display: none;
+    }
+    .next-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 0 28px rgba(139,92,246,0.5);
+    }
+
+    /* result */
+    #resultState {
+      display: none;
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .result-icon {
+      font-size: 3rem;
+      margin-bottom: 0.6rem;
+    }
+    .result-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    .result-title.pass { color: #6ee7b7; }
+    .result-title.fail { color: #f87171; }
+
+    .result-score {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 1.4rem;
+    }
+    .result-score strong {
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .result-btn {
+      display: inline-block;
+      padding: 0.78rem 2rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .result-btn.pass-btn {
+      background: linear-gradient(135deg, #059669, #7c3aed);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(5,150,105,0.4);
+    }
+    .result-btn.retry-btn {
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+      color: #f3eefb;
+      box-shadow: 0 0 20px rgba(124,58,237,0.4);
+    }
+    .result-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    .back-link {
+      display: block;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: rgba(192,132,252,0.6);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent-bright); }
+
+    .dots-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 1rem;
+    }
+    .dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: rgba(124,58,237,0.25);
+      transition: background 0.3s;
+    }
+    .dot.answered-correct { background: #059669; }
+    .dot.answered-wrong { background: #f87171; }
+    .dot.current { background: var(--accent-bright); box-shadow: 0 0 6px rgba(139,92,246,0.6); }
+  
+    /* Vyslo: ガラス調カード */
+    .login-card, .quiz-card, .card { border-radius: 24px !important; backdrop-filter: blur(14px); }
+    .login-title, .quiz-title { letter-spacing: -.01em !important; font-weight: 800 !important; }
+    button[type="submit"], .login-btn, .submit-btn { border-radius: 14px !important; background: linear-gradient(135deg,#7c3aed,#c026d3) !important; }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<div class="scanlines"></div>
+
+<div id="pageWrap">
+  <div class="quiz-card">
+    <div class="quiz-header">
+      <span class="quiz-logo">
+        <img class="vy-logo-img" src="/static/img/vyslo-icon-128.png" alt="Vyslo Tube" width="40" height="40" /><span class="logo-inv">Vyslo</span><span class="logo-tube">Tube</span>
+      </span>
+      <div class="quiz-subtitle">ひみつのクイズ</div>
+    </div>
+
+    <div class="quiz-divider"><span>認証クイズ</span></div>
+
+    <!-- Loading -->
+    <div id="loadingState">
+      <div class="spinner"></div>
+      <div class="loading-text">問題を準備中…</div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState">
+      <div class="error-text" id="errorMsg">問題を取ってこられませんでした</div>
+      <button class="result-btn retry-btn" onclick="location.reload()">もう一度</button>
+      <a href="/login" class="back-link">← 入口へ</a>
+    </div>
+
+    <!-- Quiz -->
+    <div id="quizState">
+      <p class="quiz-desc">5問のうち3問当てれば入れます</p>
+
+      <div class="dots-row" id="dotsRow"></div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+      </div>
+
+      <div class="score-row">
+        <span class="score-label">正解数: <span id="scoreNum">0</span> / 5</span>
+        <span class="q-counter">問 <span id="qNum">1</span> / 5</span>
+      </div>
+
+      <div class="question-text" id="questionText"></div>
+
+      <div class="choices" id="choicesWrap"></div>
+
+      <div class="feedback-msg" id="feedbackMsg"></div>
+
+      <button class="next-btn" id="nextBtn"></button>
+    </div>
+
+    <!-- Result -->
+    <div id="resultState">
+      <div class="result-icon" id="resultIcon"></div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-score" id="resultScore"></div>
+      <div id="resultActions"></div>
+      <a href="/login" class="back-link">← 入口へ戻る</a>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  /* ─── BACKGROUND PARTICLES ─── */
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles, nodes;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles = Array.from({length: 60}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.3,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      a: Math.random(),
+      hue: Math.random() < 0.6 ? 'warm' : 'gold',
+    }));
+    nodes = Array.from({length: 18}, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+    }));
+  }
+
+  function drawFrame() {
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i+1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = `rgba(124,58,237,${0.1 * (1 - dist/150)})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        }
+      }
+      const n = nodes[i];
+      n.x += n.vx; n.y += n.vy;
+      if (n.x < 0 || n.x > W) n.vx *= -1;
+      if (n.y < 0 || n.y > H) n.vy *= -1;
+    }
+    for (const p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = p.hue === 'warm'
+        ? `rgba(139,92,246,${p.a * 0.5})`
+        : `rgba(167,139,250,${p.a * 0.4})`;
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      p.a += (Math.random() - 0.5) * 0.04;
+      p.a = Math.max(0.1, Math.min(1, p.a));
+      if (p.x < -5) p.x = W+5; if (p.x > W+5) p.x = -5;
+      if (p.y < -5) p.y = H+5; if (p.y > H+5) p.y = -5;
+    }
+    requestAnimationFrame(drawFrame);
+  }
+
+  resize(); initParticles(); drawFrame();
+  window.addEventListener('resize', () => { resize(); initParticles(); });
+
+  /* ─── QUIZ LOGIC ─── */
+  const Q_URL = 'https://raw.githubusercontent.com/kuru-bana/Chocolate-Learning-Committee/refs/heads/main/choco-site/q.txt';
+  const TOTAL = 5;
+  const PASS_THRESHOLD = 3;
+
+  let questions = [];
+  let currentIdx = 0;
+  let score = 0;
+  let results = []; // 'correct' | 'wrong' | null
+
+  function parseQTxt(text) {
+    const lines = text.split('\n');
+    const qs = [];
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const parts = trimmed.split(' / ');
+      if (parts.length < 3) continue;
+      const qPart = parts.find(p => p.startsWith('Q:'));
+      const aPart = parts.find(p => p.startsWith('A:'));
+      const wParts = parts.filter(p => p.startsWith('W:'));
+      if (!qPart || !aPart || wParts.length === 0) continue;
+      qs.push({
+        q: qPart.slice(2).trim(),
+        answer: aPart.slice(2).trim(),
+        wrongs: wParts.map(w => w.slice(2).trim()),
+      });
+    }
+    return qs;
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickRandom(arr, n) {
+    return shuffle(arr).slice(0, n);
+  }
+
+  async function loadQuestions() {
+    try {
+      const res = await fetch(Q_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error('fetch failed');
+      const text = await res.text();
+      const all = parseQTxt(text);
+      if (all.length < TOTAL) throw new Error('not enough questions');
+      questions = pickRandom(all, TOTAL);
+      results = Array(TOTAL).fill(null);
+      showQuiz();
+    } catch (e) {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorState').style.display = 'block';
+      document.getElementById('errorMsg').textContent = '問題を取ってこられませんでした。ネットワークを確認してください。';
+    }
+  }
+
+  function showQuiz() {
+    document.getElementById('loadingState').style.display = 'none';
+    const quizState = document.getElementById('quizState');
+    quizState.style.display = 'block';
+
+    buildDots();
+    renderQuestion(0);
+  }
+
+  function buildDots() {
+    const dotsRow = document.getElementById('dotsRow');
+    dotsRow.innerHTML = '';
+    for (let i = 0; i < TOTAL; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' current' : '');
+      dot.id = `dot-${i}`;
+      dotsRow.appendChild(dot);
+    }
+  }
+
+  function updateDots() {
+    for (let i = 0; i < TOTAL; i++) {
+      const dot = document.getElementById(`dot-${i}`);
+      dot.className = 'dot';
+      if (results[i] === 'correct') dot.classList.add('answered-correct');
+      else if (results[i] === 'wrong') dot.classList.add('answered-wrong');
+      else if (i === currentIdx) dot.classList.add('current');
+    }
+  }
+
+  function renderQuestion(idx) {
+    currentIdx = idx;
+    const q = questions[idx];
+    updateDots();
+
+    document.getElementById('progressFill').style.width = `${(idx / TOTAL) * 100}%`;
+    document.getElementById('scoreNum').textContent = score;
+    document.getElementById('qNum').textContent = idx + 1;
+    document.getElementById('questionText').textContent = q.q;
+    document.getElementById('feedbackMsg').textContent = '';
+    document.getElementById('feedbackMsg').className = 'feedback-msg';
+    document.getElementById('nextBtn').style.display = 'none';
+
+    const choices = shuffle([q.answer, ...q.wrongs]);
+    const wrap = document.getElementById('choicesWrap');
+    wrap.innerHTML = '';
+
+    choices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.textContent = choice;
+      btn.addEventListener('click', () => handleAnswer(choice, q.answer, choices));
+      wrap.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(selected, correct, allChoices) {
+    const btns = document.querySelectorAll('.choice-btn');
+    btns.forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === correct) btn.classList.add('reveal-correct');
+    });
+
+    const isCorrect = selected === correct;
+    const feedback = document.getElementById('feedbackMsg');
+
+    if (isCorrect) {
+      score++;
+      results[currentIdx] = 'correct';
+      document.getElementById('scoreNum').textContent = score;
+      btns.forEach(btn => {
+        if (btn.textContent === selected) btn.classList.add('correct');
+      });
+      feedback.innerHTML = '<svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><polyline points="20 6 9 17 4 12"/></svg> 正解！';
+      feedback.className = 'feedback-msg correct';
+    } else {
+      results[currentIdx] = 'wrong';
+      btns.forEach(btn => {
+        if (btn.textContent === selected) btn.classList.add('wrong');
+      });
+      feedback.innerHTML = '<svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 不正解。正解は「' + String(correct).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) + '」';
+      feedback.className = 'feedback-msg wrong';
+    }
+
+    updateDots();
+
+    const nextBtn = document.getElementById('nextBtn');
+    nextBtn.style.display = 'block';
+
+    if (currentIdx + 1 < TOTAL) {
+      nextBtn.textContent = '次の問題 →';
+      nextBtn.onclick = () => renderQuestion(currentIdx + 1);
+    } else {
+      nextBtn.textContent = '結果を見る';
+      nextBtn.onclick = showResult;
+    }
+  }
+
+  async function showResult() {
+    document.getElementById('quizState').style.display = 'none';
+    const resultState = document.getElementById('resultState');
+    resultState.style.display = 'block';
+
+    const passed = score >= PASS_THRESHOLD;
+
+    document.getElementById('resultIcon').innerHTML = passed ? '<svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>' : '<svg class="vy-i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="48" height="48"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>';
+    const titleEl = document.getElementById('resultTitle');
+    titleEl.textContent = passed ? '認証成功！' : '認証失敗';
+    titleEl.className = `result-title ${passed ? 'pass' : 'fail'}`;
+    document.getElementById('resultScore').innerHTML = `
+      スコア: <strong>${score} / ${TOTAL}</strong>（${PASS_THRESHOLD}問以上で合格）
+    `;
+
+    const actionsEl = document.getElementById('resultActions');
+
+    if (passed) {
+      actionsEl.innerHTML = '<div class="loading-text" style="margin-bottom:0.5rem">ログイン中...</div>';
+      try {
+        const res = await fetch('/api/quiz-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ score, total: TOTAL }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          actionsEl.innerHTML = '';
+          const btn = document.createElement('a');
+          btn.href = data.redirect || '/';
+          btn.className = 'result-btn pass-btn';
+          btn.textContent = 'サイトに入る →';
+          actionsEl.appendChild(btn);
+          setTimeout(() => { window.location.href = data.redirect || '/'; }, 1200);
+        } else {
+          actionsEl.innerHTML = '<div class="error-text">ログイン処理に失敗しました</div>';
+        }
+      } catch {
+        actionsEl.innerHTML = '<div class="error-text">ネットワークエラーが発生しました</div>';
+      }
+    } else {
+      actionsEl.innerHTML = `
+        <button class="result-btn retry-btn" onclick="retryQuiz()">もう一度挑戦</button>
+      `;
+    }
+  }
+
+  window.retryQuiz = function() {
+    score = 0;
+    currentIdx = 0;
+    results = Array(TOTAL).fill(null);
+    document.getElementById('resultState').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+    loadQuestions();
+  };
+
+  loadQuestions();
+})();
+</script>
+</body>
+</html>
