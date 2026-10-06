@@ -272,13 +272,17 @@ const server = http.createServer((req, res) => {
       });
     });
     req2.on("error", (e) => {
+      let log = "";
+      try { log = require("fs").readFileSync("/tmp/chat.log", "utf8").substring(0, 2000); } catch(e2) {}
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "error", message: e.message }));
+      res.end(JSON.stringify({ status: "error", message: e.message, log: log }));
     });
     req2.on("timeout", () => {
       req2.destroy();
+      let log = "";
+      try { log = require("fs").readFileSync("/tmp/chat.log", "utf8").substring(0, 2000); } catch(e2) {}
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "timeout" }));
+      res.end(JSON.stringify({ status: "timeout", log: log }));
     });
     return;
   }
