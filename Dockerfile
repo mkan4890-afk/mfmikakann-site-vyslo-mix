@@ -1,4 +1,4 @@
-# VYSLO MIX — MUSIC + TUBE + CHAT + CLOUDMOON + UTOPIA in one service
+# VYSLO MIX — MUSIC + TUBE + CHAT + CLOUDMOON + UTOPIA + TALK in one service
 # Gateway (Node) on $PORT, apps on internal ports (supervisord manages all).
 FROM node:22-bookworm-slim
 

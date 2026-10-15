@@ -1,0 +1,2207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0e0a17" />
+<title>VYSLO TALK</title>
+<meta name="description" content="VYSLO TALK - だれでも無料で使えるビデオ通話" />
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" />
+<style>
+:root {
+  --bg: #0e0a17;
+  --panel: #181127;
+  --input: #0c0815;
+  --border: #34274f;
+  --text: #f1ecf8;
+  --muted: #b3a6c9;
+  --dim: #7f7299;
+  --accent: #d946ef;
+  --violet: #8b5cf6;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #e11d48;
+  --grad: linear-gradient(135deg, #8b5cf6 0%, #c026d3 100%);
+  --grad-hot: linear-gradient(135deg, #8b5cf6 0%, #d946ef 55%, #ec4899 100%);
+  --shadow: 0 12px 32px rgba(0, 0, 0, .42);
+  --glow: 0 8px 28px rgba(139, 92, 246, .38);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(600px 320px at 20% -10%, rgba(139, 92, 246, .18), transparent 60%),
+    radial-gradient(520px 300px at 85% 110%, rgba(217, 70, 239, .14), transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+button { font-family: inherit; }
+[hidden] { display: none !important; }
+
+/* ================= ホーム / 参加画面 ================= */
+#welcome {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+.hero { text-align: center; margin-top: auto; }
+.hero .logo-row { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.hero svg.logo { width: 58px; height: 58px; filter: drop-shadow(0 4px 18px rgba(139,92,246,.45)); flex: none; }
+.hero h1 { font-family: Outfit, sans-serif; font-weight: 900; font-size: clamp(30px, 6vw, 44px); letter-spacing: .08em; }
+.grad-text { background: var(--grad-hot); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p { color: var(--muted); margin-top: 10px; font-size: 14px; line-height: 1.7; }
+.panel {
+  width: min(560px, 100%);
+  margin-top: 30px;
+  margin-bottom: auto;
+  border-radius: 18px;
+  padding: 26px 24px;
+  background: linear-gradient(160deg, rgba(24, 17, 39, .95), rgba(12, 8, 21, .95));
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.panel h2 { font-family: Outfit, sans-serif; font-weight: 800; font-size: 16px; letter-spacing: .05em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.panel h2 svg { width: 17px; height: 17px; color: var(--accent); }
+.field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.field label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .04em; }
+.field .hint { font-size: 11px; color: var(--dim); line-height: 1.6; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tinput {
+  width: 100%; height: 46px; padding: 0 14px;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: var(--input); color: var(--text);
+  font-family: inherit; font-size: 14px; outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.tinput:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(139, 92, 246, .18); }
+.tinput::placeholder { color: var(--dim); }
+.devrow { display: flex; gap: 8px; margin-bottom: 16px; }
+.devchip {
+  flex: 1; height: 40px; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  border-radius: 12px; border: 1px solid var(--border); background: var(--input); color: var(--muted);
+  font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all .18s ease;
+}
+.devchip svg { width: 16px; height: 16px; }
+.devchip.on { color: #fff; border-color: rgba(139, 92, 246, .6); background: rgba(139, 92, 246, .16); }
+.devchip:hover { border-color: var(--violet); }
+.gbtn {
+  width: 100%; height: 48px; border: 0; border-radius: 12px;
+  background: var(--grad); color: #fff;
+  font-size: 14.5px; font-weight: 800; letter-spacing: .04em; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  box-shadow: var(--glow); transition: transform .15s ease, filter .15s ease;
+}
+.gbtn svg { width: 17px; height: 17px; }
+.gbtn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+.gbtn:disabled { opacity: .6; cursor: default; transform: none; }
+.join-row { display: flex; gap: 10px; margin-top: 18px; }
+.join-row .tinput { flex: 1; min-width: 0; font-size: 13.5px; }
+.sbtn {
+  height: 46px; padding: 0 20px; flex: none; border-radius: 12px; border: 1px solid var(--border);
+  background: var(--panel); color: var(--text); font-size: 13.5px; font-weight: 800; letter-spacing: .04em;
+  cursor: pointer; transition: all .18s ease;
+}
+.sbtn:hover { border-color: var(--violet); color: #fff; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 0; color: var(--dim); font-size: 11px; font-weight: 800; letter-spacing: .14em; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.notice {
+  margin-top: 18px; padding: 12px 14px; border-radius: 12px; background: var(--input); border: 1px solid var(--border);
+  color: var(--dim); font-size: 11.5px; line-height: 1.7; display: flex; gap: 9px; align-items: flex-start;
+}
+.notice svg { width: 15px; height: 15px; flex: none; margin-top: 2px; color: var(--violet); }
+#error {
+  display: none; margin-top: 14px; padding: 11px 14px; border-radius: 12px;
+  border: 1px solid rgba(225, 29, 72, .45); background: rgba(225, 29, 72, .12); color: #fda4af; font-size: 12.5px; line-height: 1.6;
+}
+#error.show { display: block; }
+.room-code-big { text-align: center; margin: 4px 0 18px; }
+.room-code-big code {
+  font-family: ui-monospace, Menlo, Consolas, "Zen Kaku Gothic New", monospace; font-size: 21px; font-weight: 700; color: var(--text);
+  background: var(--input); border: 1px solid var(--violet); border-radius: 12px; padding: 10px 18px;
+  box-shadow: var(--glow); word-break: break-all; display: inline-block;
+}
+#lobbyWrap p { color: var(--muted); font-size: 13px; line-height: 1.8; margin-bottom: 14px; }
+.waitdots { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 12.5px; margin: 6px 0 16px; }
+.waitdots i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: blink 1.2s infinite ease-in-out; }
+.waitdots i:nth-child(2) { animation-delay: .2s; } .waitdots i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; transform: scale(.8); } 40% { opacity: 1; transform: scale(1); } }
+footer { margin-top: 26px; color: var(--dim); font-size: 11px; letter-spacing: .06em; text-align: center; position: relative; z-index: 1; }
+
+/* ================= 通話画面 ================= */
+#call { flex: 1; min-height: 0; display: none; flex-direction: column; position: relative; z-index: 1; }
+#call.show { display: flex; }
+#callBar {
+  display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 12px; flex: none;
+  background: rgba(14, 10, 23, .95); border-bottom: 1px solid var(--border);
+}
+#callBar .brand { display: flex; align-items: center; gap: 8px; font-family: Outfit, sans-serif; font-weight: 900; font-size: 15px; letter-spacing: .06em; white-space: nowrap; }
+#callBar .brand svg { width: 20px; height: 20px; flex: none; }
+#callBar .room { display: flex; align-items: center; gap: 8px; min-width: 0; margin-left: 4px; font-size: 12.5px; color: var(--muted); }
+#callBar .room code {
+  font-family: ui-monospace, Menlo, Consolas, "Zen Kaku Gothic New", monospace; font-size: 12.5px; color: var(--text);
+  background: var(--input); border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 30vw;
+}
+#callBar .count { font-size: 12px; color: var(--dim); white-space: nowrap; }
+#timer {
+  display: inline-flex; align-items: center; gap: 6px; font-family: Outfit, ui-monospace, monospace; font-variant-numeric: tabular-nums;
+  font-size: 12.5px; font-weight: 700; color: var(--text); padding: 3px 9px; border-radius: 8px;
+  background: rgba(139, 92, 246, .14); border: 1px solid rgba(139, 92, 246, .4); white-space: nowrap;
+}
+#timer::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #f43f5e; box-shadow: 0 0 8px #f43f5e; }
+#lockBadge { display: inline-flex; color: var(--warn); }
+#lockBadge svg { width: 15px; height: 15px; }
+.spacer { flex: 1; }
+.cbtn {
+  display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px;
+  border-radius: 999px; border: 1px solid var(--border); background: var(--input); color: var(--muted);
+  font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all .18s ease; white-space: nowrap;
+}
+.cbtn svg { width: 15px; height: 15px; flex: none; }
+.cbtn:hover { color: var(--text); border-color: var(--violet); }
+
+#body { flex: 1; min-height: 0; display: flex; position: relative; }
+#stage { flex: 1; min-width: 0; display: flex; position: relative; padding: 12px; gap: 10px; }
+#grid {
+  flex: 1; min-width: 0; display: grid; gap: 10px;
+  grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+#mainArea { flex: 1; min-width: 0; position: relative; }
+#mainArea .tile { position: absolute; inset: 0; }
+#strip { width: 220px; flex: none; display: flex; flex-direction: column; gap: 8px; overflow-y: auto; }
+#strip .tile { height: 124px; flex: none; cursor: pointer; }
+#stage.tileview #mainArea, #stage.tileview #strip { display: none; }
+#stage.listview #grid { display: none; }
+#stage.listview #mainArea .tile { cursor: pointer; }
+.tile {
+  position: relative; border-radius: 16px; overflow: hidden; min-height: 0;
+  background: linear-gradient(160deg, #1a1230, #0c0815);
+  border: 1px solid var(--border);
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+.tile.speaking { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(217, 70, 239, .45), var(--glow); }
+.tile video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #000; }
+.tile.screen video { object-fit: contain; }
+.tile.self:not(.screen) video { transform: scaleX(-1); }
+.tile .avatar { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; }
+.tile .avatar span {
+  width: min(96px, 34%); aspect-ratio: 1; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--grad-hot); color: #fff; font-family: Outfit, "Zen Kaku Gothic New", sans-serif; font-weight: 900;
+  font-size: clamp(18px, 4vw, 38px); box-shadow: 0 8px 28px rgba(0, 0, 0, .35); text-shadow: 0 1px 3px rgba(0, 0, 0, .35);
+}
+.tile.nocam .avatar { display: flex; }
+.tile.nocam video { visibility: hidden; }
+.tile .label {
+  position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px);
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px;
+  background: rgba(12, 8, 21, .78); border: 1px solid rgba(52, 39, 79, .9); backdrop-filter: blur(6px);
+  font-size: 12px; font-weight: 700;
+}
+.tile .label .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tile .label svg { width: 14px; height: 14px; flex: none; display: none; }
+.tile .label .i-mic { color: #fb7185; }
+.tile .label .i-mod { color: var(--warn); }
+.tile .label .i-loc { color: var(--muted); }
+.tile.muted .label .i-mic { display: block; }
+.tile.mod .label .i-mod { display: block; }
+.tile.locmuted .label .i-loc { display: block; }
+.tile .hand {
+  position: absolute; top: 10px; right: 10px; width: 38px; height: 38px; border-radius: 12px; display: none;
+  align-items: center; justify-content: center; font-size: 21px; background: rgba(251, 191, 36, .92); box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  animation: wave 1.6s ease-in-out infinite;
+}
+.tile.hand .hand { display: flex; }
+@keyframes wave { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-12deg); } 40% { transform: rotate(10deg); } }
+.tile .pin {
+  position: absolute; top: 10px; left: 10px; display: none; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  background: rgba(139, 92, 246, .85); color: #fff;
+}
+.tile.pinned .pin { display: block; }
+.tile .status {
+  position: absolute; top: 10px; left: 10px; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  background: rgba(12, 8, 21, .78); border: 1px solid var(--border); color: var(--muted); display: none;
+}
+.tile.connecting .status { display: block; }
+#strip .tile .label { left: 6px; bottom: 6px; padding: 3px 8px; font-size: 11px; }
+#strip .tile .avatar span { width: 52px; font-size: 20px; }
+#strip .tile .hand { width: 28px; height: 28px; font-size: 15px; top: 6px; right: 6px; }
+
+#waiting {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none; color: var(--muted); font-size: 13px; line-height: 1.8;
+  padding: 18px 22px; border-radius: 16px; background: rgba(12, 8, 21, .82); border: 1px solid var(--border);
+  max-width: 86%; z-index: 2;
+}
+#waiting b { color: var(--text); }
+
+/* サイドパネル (チャット / 参加者) */
+.side {
+  width: 330px; flex: none; display: flex; flex-direction: column; border-left: 1px solid var(--border);
+  background: rgba(14, 10, 23, .97); min-height: 0;
+}
+.side header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); font-weight: 800; font-size: 13.5px; flex: none; }
+.side header button { border: 0; background: transparent; color: var(--muted); cursor: pointer; width: 30px; height: 30px; border-radius: 8px; font-size: 14px; }
+.side header button:hover { background: var(--panel); color: var(--text); }
+#chatLog { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.cm { max-width: 92%; }
+.cm .who { font-size: 11px; color: var(--dim); margin-bottom: 3px; font-weight: 700; }
+.cm .who b { font-weight: 800; }
+.cm .txt { display: inline-block; padding: 8px 11px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); font-size: 13px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+.cm.me { align-self: flex-end; text-align: right; }
+.cm.me .txt { background: rgba(139, 92, 246, .22); border-color: rgba(139, 92, 246, .5); text-align: left; }
+.cm.pm .txt { border-style: dashed; border-color: rgba(251, 191, 36, .65); background: rgba(251, 191, 36, .08); }
+.cm.pm .who .pmtag { color: var(--warn); }
+.cm.sys { align-self: center; text-align: center; font-size: 11.5px; color: var(--dim); }
+.chatEmpty { color: var(--dim); font-size: 12px; text-align: center; margin-top: 30px; }
+#chatToRow { display: flex; align-items: center; gap: 8px; padding: 10px 12px 0; font-size: 11.5px; color: var(--muted); font-weight: 700; flex: none; }
+#chatTo { flex: 1; min-width: 0; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: var(--input); color: var(--text); font-family: inherit; font-size: 12.5px; padding: 0 8px; }
+#chatTo.pm { border-color: rgba(251, 191, 36, .7); color: var(--warn); }
+#chatForm { display: flex; gap: 8px; padding: 10px 12px 12px; flex: none; }
+#chatForm .tinput { height: 40px; font-size: 13px; }
+#chatForm button { height: 40px; width: 44px; flex: none; border: 0; border-radius: 12px; background: var(--grad); color: #fff; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+#chatForm button svg { width: 17px; height: 17px; }
+
+#peopleBody { flex: 1; overflow-y: auto; padding: 10px 12px 16px; }
+.psec { margin-bottom: 14px; }
+.psec h4 { font-size: 11px; color: var(--dim); font-weight: 800; letter-spacing: .1em; margin: 6px 2px 8px; }
+.pwbox { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--input); }
+.pwbox .row { display: flex; gap: 8px; margin-top: 8px; }
+.pwbox .tinput { height: 36px; font-size: 13px; }
+.pwbox .st { font-size: 12px; color: var(--muted); }
+.pwbox .st b { color: var(--warn); }
+.mini {
+  height: 32px; padding: 0 11px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel); color: var(--text);
+  font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: all .15s ease; display: inline-flex; align-items: center; gap: 6px;
+}
+.mini:hover { border-color: var(--violet); }
+.mini.pri { background: var(--grad); border-color: transparent; color: #fff; }
+.mini.danger { color: #fda4af; border-color: rgba(225, 29, 72, .5); }
+.mini.danger.armed { background: var(--danger); color: #fff; }
+.knock { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; border: 1px solid rgba(251, 191, 36, .45); background: rgba(251, 191, 36, .07); margin-bottom: 8px; }
+.knock .t { flex: 1; min-width: 0; font-size: 12.5px; line-height: 1.5; }
+.knock .t small { color: var(--dim); display: block; font-size: 11px; }
+.prow { padding: 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--panel); margin-bottom: 8px; }
+.prow .top { display: flex; align-items: center; gap: 10px; }
+.av {
+  width: 34px; height: 34px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-family: Outfit, "Zen Kaku Gothic New", sans-serif; font-weight: 900; font-size: 14px; text-shadow: 0 1px 2px rgba(0,0,0,.3);
+}
+.prow .who { flex: 1; min-width: 0; }
+.prow .nm { font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow .nm .tg { color: var(--dim); font-weight: 700; font-size: 11px; margin-left: 4px; }
+.badges { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 3px; }
+.bd { font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+.bd.mod { color: var(--warn); border-color: rgba(251, 191, 36, .5); }
+.bd.me { color: #c4b5fd; border-color: rgba(139, 92, 246, .5); }
+.bd.hand { color: #111; background: var(--warn); border-color: var(--warn); }
+.prow .ic { display: flex; gap: 6px; color: var(--muted); }
+.prow .ic svg { width: 15px; height: 15px; }
+.prow .ic .off { color: #fb7185; }
+.vol { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.vol input[type=range] { flex: 1; accent-color: #c026d3; min-width: 0; }
+.vol .pct { width: 40px; text-align: right; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.iconbtn { width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); background: var(--input); color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+.iconbtn svg { width: 15px; height: 15px; }
+.iconbtn.on { color: #fda4af; border-color: rgba(225, 29, 72, .55); background: rgba(225, 29, 72, .12); }
+.acts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+details.modm { margin-top: 8px; }
+details.modm summary { cursor: pointer; font-size: 11.5px; color: var(--warn); font-weight: 800; list-style: none; display: inline-flex; align-items: center; gap: 5px; }
+details.modm summary::-webkit-details-marker { display: none; }
+details.modm summary::before { content: "▸"; transition: transform .15s ease; }
+details.modm[open] summary::before { transform: rotate(90deg); }
+
+/* 操作バー */
+#controls {
+  flex: none; display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border); background: rgba(14, 10, 23, .95); position: relative;
+}
+.ctl {
+  position: relative; width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--panel); color: var(--text); cursor: pointer; flex: none;
+  display: inline-flex; align-items: center; justify-content: center; transition: all .18s ease;
+}
+.ctl svg { width: 21px; height: 21px; }
+.ctl:hover { border-color: var(--violet); }
+.ctl.off { background: rgba(225, 29, 72, .16); border-color: rgba(225, 29, 72, .55); color: #fda4af; }
+.ctl.active { background: var(--grad); border-color: rgba(217, 70, 239, .5); color: #fff; box-shadow: var(--glow); }
+.ctl.handon { background: var(--warn); border-color: var(--warn); color: #1a1230; }
+.ctl.leave { width: 64px; border-radius: 999px; background: linear-gradient(135deg, #e11d48, #be123c); border-color: rgba(225, 29, 72, .6); color: #fff; }
+.ctl .emo { font-size: 21px; line-height: 1; }
+.ctl .badge {
+  position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 800; display: none; align-items: center; justify-content: center;
+}
+.ctl .badge.show { display: inline-flex; }
+.ctl .badge.warn { background: var(--warn); color: #1a1230; }
+.ctl .tip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  padding: 4px 9px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
+  font-size: 11px; font-weight: 700; color: var(--text); white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s ease;
+}
+.ctl:hover .tip { opacity: 1; }
+.pop {
+  position: absolute; bottom: calc(100% + 10px); z-index: 20; padding: 8px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+#reactPop { display: flex; gap: 4px; left: 50%; transform: translateX(-50%); }
+#reactPop button { width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; font-size: 24px; cursor: pointer; transition: transform .12s ease, background .12s ease; }
+#reactPop button:hover { background: var(--input); transform: scale(1.15); }
+#morePop { right: 12px; min-width: 210px; display: flex; flex-direction: column; gap: 2px; }
+#morePop button {
+  display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent;
+  color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; text-align: left;
+}
+#morePop button svg { width: 18px; height: 18px; color: var(--muted); flex: none; }
+#morePop button:hover { background: var(--input); }
+.m-only { display: none !important; }
+#morePop button[hidden] { display: none !important; }
+
+/* 入室リクエスト (モデレーター向け) */
+#knocks { position: absolute; top: 62px; right: 14px; z-index: 25; display: flex; flex-direction: column; gap: 8px; width: min(340px, calc(100vw - 28px)); }
+#knocks .knock { background: rgba(24, 17, 39, .97); box-shadow: var(--shadow); margin: 0; }
+
+/* リアクション */
+#reactLayer { position: fixed; inset: 0; pointer-events: none; z-index: 40; overflow: hidden; }
+.fly { position: absolute; bottom: 90px; display: flex; flex-direction: column; align-items: center; animation: fly 3.2s ease-out forwards; }
+.fly .e { font-size: 44px; filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); }
+.fly .n { margin-top: 2px; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: rgba(12, 8, 21, .82); border: 1px solid var(--border); white-space: nowrap; }
+@keyframes fly { 0% { transform: translateY(20px) scale(.6); opacity: 0; } 12% { opacity: 1; transform: translateY(0) scale(1.1); } 100% { transform: translateY(-58vh) scale(1); opacity: 0; } }
+
+/* 背景モーダル */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(5, 3, 10, .7); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal .box { width: min(560px, 100%); max-height: 100%; overflow-y: auto; border-radius: 18px; padding: 20px; background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.modal h3 { font-family: Outfit, "Zen Kaku Gothic New", sans-serif; font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+.modal p { color: var(--muted); font-size: 12px; line-height: 1.7; margin-bottom: 14px; }
+#bgPreview { width: 100%; max-height: 34vh; aspect-ratio: 16 / 9; border-radius: 12px; background: #000; border: 1px solid var(--border); object-fit: cover; transform: scaleX(-1); margin-bottom: 12px; display: block; }
+.bggrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bgopt {
+  aspect-ratio: 16 / 9; border-radius: 10px; border: 2px solid var(--border); background: var(--input) center / cover no-repeat;
+  color: #fff; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: flex-end; justify-content: flex-start; padding: 6px 8px;
+  text-shadow: 0 1px 3px rgba(0,0,0,.7); transition: border-color .15s ease;
+}
+.bgopt:hover { border-color: var(--violet); }
+.bgopt.sel { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(217, 70, 239, .35); }
+#bgStatus { font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 18px; }
+.modal .foot { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+#toast {
+  position: fixed; left: 50%; top: 62px; transform: translateX(-50%) translateY(-10px);
+  padding: 9px 15px; border-radius: 12px; background: var(--panel); border: 1px solid var(--violet);
+  color: var(--text); font-size: 12.5px; box-shadow: var(--shadow); opacity: 0; pointer-events: none;
+  transition: all .22s ease; z-index: 60; max-width: 86vw; text-align: center;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 760px) {
+  .side { position: absolute; inset: 0; width: auto; z-index: 15; border-left: 0; }
+  #callBar { gap: 7px; padding: 0 8px; }
+  #callBar .brand .bt, #callBar .room span.lbl, #callBar .count { display: none; }
+  #callBar .room code { max-width: 22vw; }
+  .cbtn span { display: none; }
+  .cbtn { padding: 0 10px; }
+  #stage { padding: 8px; gap: 8px; }
+  #stage.listview { flex-direction: column; }
+  #strip { width: auto; height: 96px; flex-direction: row; overflow-x: auto; overflow-y: hidden; }
+  #strip .tile { width: 140px; height: 100%; }
+  #controls { gap: 6px; padding-left: 6px; padding-right: 6px; }
+  .ctl { width: 44px; height: 44px; }
+  .ctl svg { width: 19px; height: 19px; }
+  .ctl.leave { width: 54px; }
+  .ctl .tip { display: none; }
+  .d-only { display: none !important; }
+  .m-only { display: flex !important; }
+  #reactPop { flex-wrap: wrap; width: 212px; justify-content: center; }
+  #knocks { top: 58px; right: 8px; }
+}
+@media (max-width: 560px) {
+  #welcome { padding: 24px 14px 28px; }
+  .panel { padding: 20px 16px; }
+  .hero br { display: none; }
+  .two { grid-template-columns: 1fr; gap: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================= ホーム / 参加画面 ================= -->
+<main id="welcome">
+  <div class="hero">
+    <div class="logo-row">
+      <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="url(#g2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-label="VYSLO TALK">
+        <defs><linearGradient id="g2" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="#8b5cf6"/><stop offset=".55" stop-color="#d946ef"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+        <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/><line x1="7" y1="9" x2="7" y2="15" opacity=".5"/><line x1="10.5" y1="9" x2="10.5" y2="15" opacity=".5"/>
+      </svg>
+      <h1>VYSLO <span class="grad-text">TALK</span></h1>
+    </div>
+    <p>だれでも無料で使えるビデオ通話。招待リンクを送るだけで、<br />すぐ通話をはじめられます。</p>
+  </div>
+
+  <div class="panel">
+    <div id="startWrap">
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>
+        <span id="panelTitle">通話をはじめる</span>
+      </h2>
+      <div class="room-code-big" id="roomCodeWrap" hidden><code id="roomCodeBig"></code></div>
+      <div class="field">
+        <label for="nameInput">表示名 (通話で表示される名前)</label>
+        <input id="nameInput" class="tinput" type="text" maxlength="30" placeholder="なまえ (空欄なら「ゲスト」)" autocomplete="nickname" />
+      </div>
+      <div class="two">
+        <div class="field" id="codeField">
+          <label for="codeInput">招待コード (合言葉)</label>
+          <input id="codeInput" class="tinput" type="text" maxlength="12" placeholder="空欄なら自動で作成" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="pwInput" id="pwLabel">参加パスワード (任意)</label>
+          <input id="pwInput" class="tinput" type="password" maxlength="64" placeholder="なしでもOK" autocomplete="new-password" />
+        </div>
+      </div>
+      <div class="field" style="margin-top:-6px"><span class="hint" id="codeHint">合言葉は 6 文字以内の英数字・ひらがな・カタカナ・漢字で決められます。パスワードを設定すると、パスワードを知らない人はモデレーターの許可が必要になります。</span></div>
+      <div class="devrow">
+        <button type="button" class="devchip on" id="preMic" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span>マイク ON</span>
+        </button>
+        <button type="button" class="devchip on" id="preCam" aria-pressed="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>
+          <span>カメラ ON</span>
+        </button>
+      </div>
+      <button class="gbtn" id="mainBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>
+        <span id="mainBtnLabel">新しい通話を作成</span>
+      </button>
+
+      <div id="joinOther">
+        <div class="divider">または</div>
+        <div class="join-row">
+          <input id="joinInput" class="tinput" type="text" placeholder="招待コード か 招待リンク" />
+          <button class="sbtn" id="joinBtn" type="button">参加</button>
+        </div>
+      </div>
+      <div class="join-row" id="backRow" hidden style="justify-content:center">
+        <button class="sbtn" id="backBtn" type="button">← ホームに戻る</button>
+      </div>
+    </div>
+
+    <div id="lobbyWrap" hidden>
+      <h2>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        入室の許可を待っています
+      </h2>
+      <div class="room-code-big"><code id="lobbyCode"></code></div>
+      <p id="lobbyMsg"></p>
+      <div class="waitdots"><i></i><i></i><i></i><span id="lobbyWaitText">モデレーターの応答を待っています</span></div>
+      <div id="lobbyPwRow" class="join-row" style="margin-top:0">
+        <input id="lobbyPw" class="tinput" type="password" maxlength="64" placeholder="パスワードを知っていれば入力" autocomplete="off" />
+        <button class="sbtn" id="lobbyPwBtn" type="button">入室</button>
+      </div>
+      <div class="join-row" style="justify-content:center">
+        <button class="sbtn" id="lobbyCancel" type="button">キャンセル</button>
+      </div>
+    </div>
+
+    <div id="error"></div>
+    <div class="join-row" id="takeoverRow" hidden style="justify-content:center">
+      <button class="sbtn" id="takeoverBtn" type="button">前のタブの通話を終了して、このタブで参加する</button>
+    </div>
+
+    <div class="notice">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>通話は招待コードを知っている人だけが参加できます (1部屋 最大8人)。コードや招待リンクをSNSなどで広く公開しないでください。カメラ・マイクの許可を求められたら「許可」を選んでください。</span>
+    </div>
+  </div>
+
+  <footer>VYSLO TALK — VYSLO MIX</footer>
+</main>
+
+<!-- ================= 通話画面 ================= -->
+<section id="call" aria-label="通話中">
+  <nav id="callBar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="url(#g1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="24" y2="24"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs>
+        <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/>
+      </svg>
+      <span class="bt">VYSLO <span class="grad-text">TALK</span></span>
+    </div>
+    <div class="room"><span class="lbl">部屋:</span> <code id="roomCodeTop"></code></div>
+    <span id="lockBadge" title="参加パスワード設定中" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+    <span id="timer" title="通話時間">00:00</span>
+    <span class="count" id="peopleCount"></span>
+    <div class="spacer"></div>
+    <button class="cbtn" id="viewBtn" type="button" title="タイルビュー / 一覧ビューを切り替え">
+      <svg class="v-tile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      <svg class="v-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="14" height="18" rx="2"/><rect x="18" y="3" width="4" height="5" rx="1"/><rect x="18" y="10" width="4" height="5" rx="1"/><rect x="18" y="17" width="4" height="4" rx="1"/></svg>
+      <span id="viewLabel">一覧ビュー</span>
+    </button>
+    <button class="cbtn" id="copyBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span>招待リンクをコピー</span>
+    </button>
+  </nav>
+
+  <div id="body">
+    <div id="stage" class="tileview">
+      <div id="grid"></div>
+      <div id="mainArea"></div>
+      <div id="strip"></div>
+    </div>
+    <div id="waiting">まだ誰もいません。<br />右上の <b>招待リンクをコピー</b> で相手に送りましょう。</div>
+
+    <aside id="chat" class="side" hidden>
+      <header>
+        <span>チャット</span>
+        <button type="button" id="chatClose" aria-label="チャットを閉じる">✕</button>
+      </header>
+      <div id="chatLog"><div class="chatEmpty">メッセージはまだありません</div></div>
+      <div id="chatToRow">
+        <span>宛先</span>
+        <select id="chatTo" aria-label="宛先"><option value="">全員</option></select>
+      </div>
+      <form id="chatForm" autocomplete="off">
+        <input id="chatInput" class="tinput" type="text" maxlength="500" placeholder="メッセージを入力" />
+        <button type="submit" aria-label="送信"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </form>
+    </aside>
+
+    <aside id="people" class="side" hidden>
+      <header>
+        <span id="peopleTitle">参加者</span>
+        <button type="button" id="peopleClose" aria-label="参加者一覧を閉じる">✕</button>
+      </header>
+      <div id="peopleBody"></div>
+    </aside>
+  </div>
+
+  <div id="knocks"></div>
+
+  <div id="controls">
+    <button class="ctl" id="micBtn" type="button" aria-label="マイク">
+      <svg class="i-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      <svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="2" x2="22" y2="22"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+      <span class="tip">マイク</span>
+    </button>
+    <button class="ctl" id="camBtn" type="button" aria-label="カメラ">
+      <svg class="i-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>
+      <svg class="i-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+      <span class="tip">カメラ</span>
+    </button>
+    <button class="ctl d-only" id="screenBtn" type="button" aria-label="画面共有">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polyline points="9 10 12 7 15 10"/></svg>
+      <span class="tip">画面共有</span>
+    </button>
+    <button class="ctl d-only" id="handBtn" type="button" aria-label="手を挙げる">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+      <span class="tip">手を挙げる</span>
+    </button>
+    <button class="ctl" id="reactBtn" type="button" aria-label="リアクション">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      <span class="tip">リアクション</span>
+    </button>
+    <button class="ctl" id="chatBtn" type="button" aria-label="チャット">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="badge" id="chatBadge">0</span>
+      <span class="tip">チャット</span>
+    </button>
+    <button class="ctl" id="peopleBtn" type="button" aria-label="参加者一覧">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="badge warn" id="peopleBadge">0</span>
+      <span class="tip">参加者一覧</span>
+    </button>
+    <button class="ctl" id="moreBtn" type="button" aria-label="その他">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      <span class="tip">その他</span>
+    </button>
+    <button class="ctl leave" id="leaveBtn" type="button" aria-label="通話を終了">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+      <span class="tip">通話を終了</span>
+    </button>
+
+    <div class="pop" id="reactPop" hidden></div>
+    <div class="pop" id="morePop" hidden>
+      <button type="button" id="mBg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>背景を変更</button>
+      <button type="button" id="mScreen" class="m-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>画面共有</span></button>
+      <button type="button" id="mHand" class="m-only"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v6"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg><span>手を挙げる</span></button>
+    </div>
+  </div>
+</section>
+
+<div class="modal" id="bgModal" hidden>
+  <div class="box" role="dialog" aria-label="背景を変更">
+    <h3>背景を変更</h3>
+    <p>人物 (顔・体) はそのまま、うしろの背景だけを置き換えます。処理はすべてこの端末の中で行われます。</p>
+    <video id="bgPreview" autoplay playsinline muted></video>
+    <div class="bggrid" id="bgGrid"></div>
+    <input type="file" id="bgFile" accept="image/*" hidden />
+    <div id="bgStatus"></div>
+    <div class="foot"><button class="mini pri" id="bgClose" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<div id="reactLayer"></div>
+<div id="audios" hidden></div>
+<div id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var API = "/talk-api";
+  var CODE_CHARS = "abcdefghijkmnpqrstuvwxyz23456789";
+  var CODE_RE = /^[a-z0-9\u3041-\u3096\u30a1-\u30fa\u30fc\u3005\u3006\u4e00-\u9fff]{1,32}$/;
+  var REACTIONS = ["👍", "👏", "😂", "😮", "❤️", "🎉", "🙏", "🔥"];
+  var $ = function (id) { return document.getElementById(id); };
+  var noop = function () {};
+
+  // ---------- 保存 ----------
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  function randHex(n) {
+    var a = new Uint8Array(n); crypto.getRandomValues(a);
+    return Array.from(a, function (b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+  }
+  function randCode(n, chars) {
+    var a = new Uint32Array(n); crypto.getRandomValues(a);
+    var s = ""; for (var i = 0; i < n; i++) s += chars[a[i] % chars.length];
+    return s;
+  }
+
+  // 内部ユーザーID のもとになる秘密キー (この端末・このブラウザだけが知っている)。
+  // 表示名ではなく、サーバーがこのキーから作るユーザーIDで人を区別する。
+  var secret = lsGet("talk_secret");
+  if (!/^[a-f0-9]{48}$/.test(secret || "")) { secret = randHex(24); lsSet("talk_secret", secret); }
+  var tabId = randCode(16, "abcdefghijklmnopqrstuvwxyz0123456789"); // このタブだけの ID
+
+  // ---------- 状態 ----------
+  var room = null, me = null, myUserId = null, myName = "", joinPw = "", createFlag = false;
+  var phase = "home";          // home | connecting | lobby | call
+  var es = null, esGen = 0, terminal = false, attempts = 0, reconnectT = null;
+  var iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+  var roomInfo = { mods: [], owner: null, hasPassword: false, startedAt: 0 };
+  var clockOffset = 0;
+  var peers = {};
+  var knocks = {};
+  var local = { audio: null, video: null, screen: null, mic: true, cam: true, hand: false };
+  var wantMic = lsGet("talk_mic") !== "0";
+  var wantCam = lsGet("talk_cam") !== "0";
+  var unread = 0, wakeLock = null, leaving = false;
+  var hbT = null, timerT = null, meterT = null;
+  var actx = null;
+  var localMeter = null;
+  var viewMode = lsGet("talk_view") === "list" ? "list" : "tile";
+  var pinned = null, mainId = null, lastSpeaker = null, lastSpeakerAt = 0;
+
+  // ---------- 表示ユーティリティ ----------
+  var toastT = null;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { t.classList.remove("show"); }, 3200);
+  }
+  function showError(msg) { var e = $("error"); e.textContent = msg; e.classList.add("show"); }
+  function clearError() { $("error").classList.remove("show"); var t = $("takeoverRow"); if (t) t.hidden = true; }
+  var takeover = false; // 同じユーザーの別タブの接続を置き換えて参加する
+  function initial(name) { var s = (name || "?").trim(); return s ? Array.from(s)[0].toUpperCase() : "?"; }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+  // ユーザー名からいつも同じ色を作る
+  function hueOf(name) {
+    var h = 2166136261;
+    Array.from(String(name || "")).forEach(function (ch) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; });
+    return h % 360;
+  }
+  function colorOf(name) {
+    var h = hueOf(name);
+    return {
+      solid: "hsl(" + h + ", 80%, 72%)",
+      grad: "linear-gradient(135deg, hsl(" + h + ", 72%, 56%) 0%, hsl(" + ((h + 38) % 360) + ", 78%, 48%) 100%)",
+    };
+  }
+
+  // 参加者 (自分を含む)
+  function everyone() {
+    var list = [{ id: "self", userId: myUserId, name: myName, tag: (myUserId || "").slice(0, 4), state: myState(), joinedAt: 0, self: true }];
+    Object.keys(peers).forEach(function (id) { list.push(peers[id]); });
+    return list;
+  }
+  // 同じ表示名の人がいるときは ID の一部 (#xxxx) を付けて見分けられるようにする
+  function shownName(p) {
+    var n = p.name, dup = 0;
+    everyone().forEach(function (q) { if (q.name === n) dup++; });
+    return dup > 1 ? n + " #" + p.tag : n;
+  }
+  function isMod(userId) { return roomInfo.mods.indexOf(userId) >= 0; }
+  function amMod() { return !!myUserId && isMod(myUserId); }
+  function myState() { return { mic: local.mic, cam: local.cam && !!local.video, screen: !!local.screen, hand: local.hand }; }
+
+  // ---------- 招待コード ----------
+  function normCode(v) {
+    v = String(v || "").normalize("NFKC").toLowerCase().replace(/^vyslo-talk-/, "").replace(/\s+/g, "");
+    return CODE_RE.test(v) ? v : null;
+  }
+  function parseInput(input) {
+    var v = String(input || "").trim();
+    if (!v) return null;
+    if (/^https?:\/\//i.test(v)) {
+      try {
+        var u = new URL(v);
+        var q = u.searchParams.get("room");
+        if (!q && u.searchParams.get("p")) { try { q = new URL(u.searchParams.get("p"), u.origin).searchParams.get("room"); } catch (e) {} }
+        if (q) v = q;
+      } catch (e) {}
+    }
+    return normCode(v);
+  }
+  function shareLink(code) {
+    var origin = location.origin;
+    try { if (window.top !== window.self && document.referrer) origin = new URL(document.referrer).origin; } catch (e) {}
+    return origin + "/?app=talk&p=" + encodeURIComponent("/?room=" + code);
+  }
+
+  // ---------- ホーム画面 ----------
+  var pendingRoom = null;
+  function setChip(btn, on, label) {
+    btn.classList.toggle("on", on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    btn.querySelector("span").textContent = label + (on ? " ON" : " OFF");
+  }
+  function refreshChips() { setChip($("preMic"), wantMic, "マイク"); setChip($("preCam"), wantCam, "カメラ"); }
+  $("preMic").addEventListener("click", function () { wantMic = !wantMic; lsSet("talk_mic", wantMic ? "1" : "0"); refreshChips(); });
+  $("preCam").addEventListener("click", function () { wantCam = !wantCam; lsSet("talk_cam", wantCam ? "1" : "0"); refreshChips(); });
+
+  function showHome() {
+    pendingRoom = null;
+    $("startWrap").hidden = false; $("lobbyWrap").hidden = true;
+    $("panelTitle").textContent = "通話をはじめる";
+    $("mainBtnLabel").textContent = "新しい通話を作成";
+    $("roomCodeWrap").hidden = true;
+    $("codeField").hidden = false;
+    $("pwLabel").textContent = "参加パスワード (任意)";
+    $("pwInput").placeholder = "なしでもOK";
+    $("codeHint").textContent = "合言葉は 6 文字以内の英数字・ひらがな・カタカナ・漢字で決められます。パスワードを設定すると、パスワードを知らない人はモデレーターの許可が必要になります。";
+    $("joinOther").hidden = false;
+    $("backRow").hidden = true;
+  }
+  function showJoin(code) {
+    pendingRoom = code;
+    $("startWrap").hidden = false; $("lobbyWrap").hidden = true;
+    $("panelTitle").textContent = "通話に参加";
+    $("mainBtnLabel").textContent = "通話に参加する";
+    $("roomCodeBig").textContent = code;
+    $("roomCodeWrap").hidden = false;
+    $("codeField").hidden = true;
+    $("pwLabel").textContent = "参加パスワード (設定されている場合)";
+    $("pwInput").placeholder = "わからなければ空欄";
+    $("codeHint").textContent = "パスワードが分からないときは空欄のまま参加すると、モデレーターに入室の許可をお願いできます。";
+    $("joinOther").hidden = true;
+    $("backRow").hidden = false;
+  }
+  function setRoomParam(code) {
+    try {
+      var u = new URL(location.href);
+      if (code) u.searchParams.set("room", code); else u.searchParams.delete("room");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
+
+  $("mainBtn").addEventListener("click", function () {
+    if (pendingRoom) return startCall(pendingRoom, false);
+    var raw = $("codeInput").value.trim();
+    if (raw) {
+      var c = normCode(raw);
+      if (!c || Array.from(c).length > 6) { showError("合言葉は 6 文字以内の英数字・ひらがな・カタカナ・漢字で入力してください (記号・スペースは使えません)。"); return; }
+      return startCall(c, true);
+    }
+    startCall(randCode(10, CODE_CHARS), true);
+  });
+  $("joinBtn").addEventListener("click", function () {
+    var code = parseInput($("joinInput").value);
+    if (!code) { showError("招待コードが正しくありません。"); return; }
+    startCall(code, false);
+  });
+  $("joinInput").addEventListener("keydown", function (e) { if (e.key === "Enter") $("joinBtn").click(); });
+  ["nameInput", "codeInput", "pwInput"].forEach(function (id) {
+    $(id).addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.isComposing) $("mainBtn").click(); });
+  });
+  $("backBtn").addEventListener("click", function () { setRoomParam(null); showHome(); });
+
+  // ---------- 端末 (カメラ・マイク) ----------
+  function getMedia(c) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject(new Error("unsupported"));
+    return navigator.mediaDevices.getUserMedia(c);
+  }
+  var AUDIO_C = { echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+  var VIDEO_C = { width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 24 }, facingMode: "user" };
+
+  function acquireInitial() {
+    var c = { audio: wantMic ? AUDIO_C : false, video: wantCam ? VIDEO_C : false };
+    if (!c.audio && !c.video) return Promise.resolve();
+    return getMedia(c).catch(function () {
+      var got = null, tries = [];
+      if (c.audio) tries.push({ audio: c.audio, video: false });
+      if (c.video) tries.push({ audio: false, video: c.video });
+      return tries.reduce(function (p, t) {
+        return p.then(function () {
+          return getMedia(t).then(function (s) { if (!got) got = new MediaStream(); s.getTracks().forEach(function (tr) { got.addTrack(tr); }); }).catch(noop);
+        });
+      }, Promise.resolve()).then(function () {
+        toast(got ? "一部の端末を使えませんでした。" : "カメラ・マイクを使えませんでした。見る・聞くだけで参加します。");
+        return got;
+      });
+    }).then(function (s) {
+      if (!s) return;
+      s.getAudioTracks().forEach(function (t) { local.audio = t; });
+      s.getVideoTracks().forEach(function (t) { local.video = t; });
+    });
+  }
+
+  function currentVideoTrack() { return local.screen || (bg.track && bg.running ? bg.track : null) || local.video || null; }
+  function replaceAll(kind, track) {
+    Object.keys(peers).forEach(function (id) {
+      peers[id].pc.getTransceivers().forEach(function (t) {
+        if (t.__kind === kind) t.sender.replaceTrack(track).catch(noop);
+      });
+    });
+  }
+  function refreshVideoSenders() { replaceAll("video", currentVideoTrack()); refreshSelfVideo(); }
+
+  // ---------- API ----------
+  function post(path, body, opts) {
+    return fetch(API + path, Object.assign({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }, opts || {}))
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { j.__status = r.status; return j; }); })
+      .catch(function () { return { __status: 0 }; });
+  }
+  function authBody(extra) { return Object.assign({ room: room, id: me && me.id, token: me && me.token }, extra || {}); }
+  function send(to, type, data) {
+    if (!me || !room || phase !== "call") return Promise.resolve({});
+    return post("/send", authBody({ to: to || undefined, type: type, data: data }));
+  }
+  function sendState() { return send(null, "state", myState()); }
+
+  // ---------- 通話の開始 ----------
+  function startCall(code, isCreate) {
+    if (phase !== "home") return;
+    clearError();
+    myName = ($("nameInput").value || "").trim().slice(0, 30);
+    if (myName) lsSet("uid", myName);
+    myName = myName || "ゲスト";
+    joinPw = $("pwInput").value || "";
+    room = code;
+    createFlag = !!isCreate;
+    leaving = false; terminal = false; attempts = 0;
+    phase = "connecting";
+    var AC = window.AudioContext || window.webkitAudioContext;
+    try { actx = AC ? new AC() : null; if (actx && actx.resume) actx.resume().catch(noop); } catch (e) { actx = null; }
+    var btn = $("mainBtn");
+    btn.disabled = true;
+
+    fetch(API + "/config", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) { if (cfg && cfg.iceServers) iceServers = cfg.iceServers; })
+      .catch(noop)
+      .then(acquireInitial)
+      .then(function () {
+        local.mic = !!local.audio && wantMic;
+        local.cam = !!local.video && wantCam;
+        if (local.audio) local.audio.enabled = local.mic;
+        setupLocalMeter();
+        connectRoom();
+      })
+      .catch(function () { endCall(true, "通話を開始できませんでした。もう一度お試しください。"); })
+      .then(function () { btn.disabled = false; });
+  }
+
+  function connectRoom() {
+    clearTimeout(reconnectT);
+    post("/ticket", { room: room, name: myName, secret: secret, tab: tabId, password: joinPw, create: createFlag, takeover: takeover }).then(function (j) {
+      if (leaving || terminal) return;
+      if (!j.ticket) {
+        if (phase === "call" || phase === "lobby") return scheduleReconnect();
+        return endCall(true, j.__status === 400 ? "招待コードが正しくありません。" : "通話サーバーに接続できませんでした。");
+      }
+      myUserId = j.userId;
+      openEvents(j.ticket);
+    });
+  }
+
+  function scheduleReconnect() {
+    if (leaving || terminal) return;
+    attempts++;
+    if (attempts > 8) return endCall(true, "通話サーバーとの接続が切れました。もう一度参加してください。");
+    toast("接続を再試行しています…");
+    clearTimeout(reconnectT);
+    reconnectT = setTimeout(connectRoom, Math.min(6000, 1200 * attempts));
+  }
+
+  function closeEvents() { esGen++; if (es) { try { es.close(); } catch (e) {} es = null; } }
+
+  function openEvents(ticket) {
+    closeEvents();
+    var gen = esGen;
+    var src = new EventSource(API + "/events?ticket=" + encodeURIComponent(ticket));
+    es = src;
+    var on = function (ev, fn) {
+      src.addEventListener(ev, function (e) {
+        if (gen !== esGen) return;
+        var d = {}; try { d = JSON.parse(e.data || "{}"); } catch (x) {}
+        fn(d);
+      });
+    };
+    var fatal = function (msg, keepJoin) { terminal = true; endCall(true, msg, keepJoin); };
+    on("welcome", onWelcome);
+    on("lobby", onLobby);
+    on("duplicate", function () {
+      fatal("このユーザーは別のタブ (または別のウィンドウ) ですでにこの通話に参加しているため参加できません。前のタブで退出するか、下のボタンでこのタブに切り替えてください (別の通話なら、別のタブからでも参加できます)。");
+      $("takeoverRow").hidden = false;
+    });
+    on("replaced", function () { fatal("別のタブでこの通話に参加し直したため、このタブでの通話は終了しました。", false); });
+    on("full", function (d) { fatal("この部屋は満員です (最大" + (d.max || 8) + "人)。別の部屋を作ってください。"); });
+    on("taken", function () { fatal("この合言葉はいま別の通話で使われています。ほかの合言葉にしてください。", false); });
+    on("denied", function () { fatal("モデレーターに入室を断られました。"); });
+    on("kicked", function (d) { fatal("モデレーター (" + (d.by || "") + ") によって通話から退出させられました。"); });
+    on("expired", function () { if (gen === esGen) { closeEvents(); scheduleReconnect(); } });
+    on("join", onJoin);
+    on("leave", onLeave);
+    on("msg", onMessage);
+    on("room", onRoomInfo);
+    on("knock", function (d) { knocks[d.id] = d; renderKnocks(); renderPeople(); toast(d.name + " さんが部屋に入ろうとしています"); });
+    on("knock-end", function (d) { delete knocks[d.id]; renderKnocks(); renderPeople(); });
+    on("force", onForce);
+    src.onerror = function () {
+      if (gen !== esGen) return;
+      closeEvents();
+      if (leaving || terminal) return;
+      if (phase === "call" || phase === "lobby") scheduleReconnect();
+      else endCall(true, "通話サーバーに接続できませんでした。");
+    };
+  }
+
+  function startHeartbeat() {
+    clearInterval(hbT);
+    hbT = setInterval(function () {
+      if (!me || leaving) return;
+      post("/send", authBody({ type: "ping" })).then(function (j) {
+        if (leaving || terminal) return;
+        if (j.__status === 403 && (phase === "call" || phase === "lobby")) { closeEvents(); scheduleReconnect(); return; }
+        // サーバーの参加者一覧と照らし合わせて、もう抜けている人の表示を消す
+        if (j.ok && j.inRoom && Array.isArray(j.peers) && phase === "call") {
+          var live = {};
+          j.peers.forEach(function (q) { live[q.id] = 1; });
+          var gone = Object.keys(peers).filter(function (id) { return !live[id] && Date.now() - (peers[id].createdAt || 0) > 8000; });
+          if (gone.length) { gone.forEach(removePeer); renderAll(); }
+        }
+      });
+    }, 10000);
+  }
+
+  function onWelcome(d) {
+    var reconnect = phase === "call";
+    Object.keys(peers).forEach(removePeer);
+    knocks = {};
+    me = { id: d.id, token: d.token };
+    myUserId = d.userId;
+    roomInfo = d.room;
+    clockOffset = (d.now || Date.now()) - Date.now();
+    createFlag = false; attempts = 0; takeover = false;
+    if (phase !== "call") { clearError(); enterCallUI(); }
+    phase = "call";
+    sendState();
+    d.peers.forEach(function (p) { createPeer(p, true); });
+    startHeartbeat();
+    if (reconnect) toast("再接続しました");
+    else if (amMod() && roomInfo.owner === myUserId) toast("あなたはこの部屋のモデレーターです");
+    checkAudio();
+    renderAll();
+  }
+
+  function onLobby(d) {
+    if (phase === "call") {
+      // 通話中に待機室へ戻されたとき: 前の参加者の映像を残さない
+      Object.keys(peers).forEach(removePeer);
+      knocks = {};
+      ["grid", "mainArea", "strip", "knocks", "audios"].forEach(function (id) { $(id).innerHTML = ""; });
+      selfTile = null;
+      $("call").classList.remove("show");
+      $("welcome").style.display = "flex";
+    }
+    me = { id: d.id, token: d.token };
+    phase = "lobby"; takeover = false;
+    attempts = 0;
+    $("startWrap").hidden = true;
+    $("lobbyWrap").hidden = false;
+    $("lobbyCode").textContent = room;
+    var pwRow = $("lobbyPwRow");
+    if (d.reason === "kicked") {
+      $("lobbyMsg").textContent = "以前この部屋から退出させられたため、もう一度入るにはモデレーターの許可が必要です。";
+      pwRow.hidden = true;
+    } else {
+      $("lobbyMsg").textContent = "この部屋には参加パスワードが設定されています。パスワードを入力するか、モデレーターが「許可」すると参加できます。";
+      pwRow.hidden = false;
+    }
+    $("lobbyWaitText").textContent = d.hasMods ? "モデレーターの応答を待っています" : "モデレーターが来るのを待っています";
+    startHeartbeat();
+  }
+  $("lobbyPwBtn").addEventListener("click", function () {
+    var v = $("lobbyPw").value;
+    if (!v || !me) return;
+    post("/knock", authBody({ password: v })).then(function (j) {
+      if (j.__status === 403) { clearError(); showError("パスワードが違います。"); }
+      else if (j.__status === 409) showError("この部屋は満員です。");
+      else if (j.ok) { clearError(); joinPw = v; }
+    });
+  });
+  $("lobbyPw").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.isComposing) $("lobbyPwBtn").click(); });
+  $("lobbyCancel").addEventListener("click", function () { endCall(true); });
+
+  function enterCallUI() {
+    $("welcome").style.display = "none";
+    $("call").classList.add("show");
+    $("roomCodeTop").textContent = room;
+    setRoomParam(room);
+    if (!selfTile) addSelfTile();
+    updateControls();
+    applyView();
+    clearInterval(timerT);
+    timerT = setInterval(updateTimer, 1000);
+    updateTimer();
+    clearInterval(meterT);
+    meterT = setInterval(meterTick, 200);
+    try { if ("wakeLock" in navigator) navigator.wakeLock.request("screen").then(function (w) { wakeLock = w; }).catch(noop); } catch (e) {}
+    if (bg.mode !== "none" && local.video) startBg();
+  }
+
+  function sendLeave() {
+    if (!me || !room) return;
+    var body = JSON.stringify({ room: room, id: me.id, token: me.token, type: "leave" });
+    try { if (navigator.sendBeacon && navigator.sendBeacon(API + "/send", new Blob([body], { type: "application/json" }))) return; } catch (e) {}
+    fetch(API + "/send", { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true }).catch(noop);
+  }
+
+  function endCall(silent, errMsg, keepJoin) {
+    var wasCall = phase === "call";
+    var lastRoom = room, wasCreate = createFlag;
+    leaving = true; takeover = false;
+    sendLeave();
+    closeEvents();
+    clearTimeout(reconnectT);
+    clearInterval(hbT); clearInterval(timerT); clearInterval(meterT);
+    Object.keys(peers).forEach(removePeer);
+    stopBg();
+    [local.audio, local.video, local.screen].forEach(function (t) { if (t) try { t.stop(); } catch (e) {} });
+    local.audio = local.video = local.screen = null;
+    local.hand = false;
+    localMeter = null;
+    if (actx) { try { actx.close(); } catch (e) {} actx = null; }
+    me = null; room = null; myUserId = myUserId; knocks = {};
+    roomInfo = { mods: [], owner: null, hasPassword: false, startedAt: 0 };
+    pinned = null; mainId = null; lastSpeaker = null;
+    if (wakeLock) { try { wakeLock.release(); } catch (e) {} wakeLock = null; }
+    ["grid", "mainArea", "strip", "knocks", "peopleBody", "audios"].forEach(function (id) { $(id).innerHTML = ""; });
+    selfTile = null;
+    $("chatLog").innerHTML = '<div class="chatEmpty">メッセージはまだありません</div>';
+    unread = 0; updateBadge();
+    $("chat").hidden = true; $("people").hidden = true;
+    $("reactPop").hidden = true; $("morePop").hidden = true; $("bgModal").hidden = true;
+    $("call").classList.remove("show");
+    $("welcome").style.display = "flex";
+    phase = "home";
+    clearError();
+    // 参加できなかったときは、同じ部屋の参加画面に戻す (もう一度押すと同じ部屋に入り直せる)
+    if (errMsg && lastRoom && keepJoin !== false && !wasCreate) { setRoomParam(lastRoom); showJoin(lastRoom); }
+    else { setRoomParam(null); showHome(); }
+    if (errMsg) showError(errMsg);
+    else if (!silent && wasCall) toast("通話を終了しました");
+  }
+  $("leaveBtn").addEventListener("click", function () { endCall(false); });
+  $("takeoverBtn").addEventListener("click", function () {
+    var code = new URLSearchParams(location.search).get("room") || "";
+    if (!code || phase !== "home") return;
+    takeover = true;
+    startCall(code, false);
+  });
+  window.addEventListener("pagehide", function () { if (me) { leaving = true; sendLeave(); closeEvents(); } });
+
+  // ---------- 参加者の出入り ----------
+  function onJoin(d) {
+    if (!peers[d.id]) createPeer(d, false);
+    else { var ex = peers[d.id]; ex.name = d.name; ex.userId = d.userId; ex.tag = d.tag; }
+    toast(d.name + " さんが参加しました");
+    sysChat(d.name + " さんが参加しました");
+    renderAll();
+  }
+  function onLeave(d) {
+    var p = peers[d.id];
+    if (p) { toast(p.name + " さんが退出しました"); sysChat(p.name + " さんが退出しました"); }
+    removePeer(d.id);
+    if (pinned === d.id) pinned = null;
+    renderAll();
+  }
+  function onRoomInfo(d) {
+    var was = amMod();
+    roomInfo = d;
+    var now = amMod();
+    if (!was && now) toast("モデレーターになりました");
+    if (was && !now) { toast("モデレーターが解除されました"); knocks = {}; renderKnocks(); }
+    renderAll();
+  }
+
+  // ---------- WebRTC (参加者どうしを直接つなぐ) ----------
+  function createPeer(info, initiator) {
+    var pc = new RTCPeerConnection({ iceServers: iceServers });
+    var p = {
+      id: info.id, userId: info.userId || "", tag: info.tag || "", name: info.name || "ゲスト",
+      state: info.state || { mic: true, cam: true, screen: false, hand: false }, joinedAt: info.joinedAt || Date.now(),
+      pc: pc, pending: [], stream: new MediaStream(), speaking: false, createdAt: Date.now(),
+    };
+    peers[p.id] = p;
+    addTile(p);
+
+    if (initiator) {
+      var ta = pc.addTransceiver("audio", { direction: "sendrecv" }); ta.__kind = "audio";
+      var tv = pc.addTransceiver("video", { direction: "sendrecv" }); tv.__kind = "video";
+      if (local.audio) ta.sender.replaceTrack(local.audio);
+      if (currentVideoTrack()) tv.sender.replaceTrack(currentVideoTrack());
+    }
+    pc.onicecandidate = function (e) { if (e.candidate) send(p.id, "signal", { candidate: e.candidate }); };
+    pc.ontrack = function (e) {
+      var tr = e.track;
+      if (tr.kind === "audio") attachAudio(p, tr);
+      else {
+        p.stream.getVideoTracks().forEach(function (t) { p.stream.removeTrack(t); });
+        p.stream.addTrack(tr);
+        p.video.srcObject = p.stream;
+        p.video.play().catch(noop);
+      }
+    };
+    pc.onconnectionstatechange = function () {
+      var s = pc.connectionState;
+      if (!p.tile) return;
+      p.tile.classList.toggle("connecting", s !== "connected");
+      p.tile.querySelector(".status").textContent = s === "failed" ? "接続できません" : "接続中…";
+      if (s === "failed" && initiator) { try { pc.restartIce(); renegotiate(p.id, true); } catch (e) {} }
+    };
+    if (initiator) renegotiate(p.id, false);
+    return p;
+  }
+  function renegotiate(id, iceRestart) {
+    var p = peers[id];
+    if (!p) return;
+    p.pc.createOffer(iceRestart ? { iceRestart: true } : undefined)
+      .then(function (o) { return p.pc.setLocalDescription(o); })
+      .then(function () { send(id, "signal", { sdp: p.pc.localDescription }); })
+      .catch(function (e) { console.warn("offer", e); });
+  }
+  function onSignal(from, data) {
+    var p = peers[from];
+    if (data.sdp) {
+      if (data.sdp.type === "offer") {
+        if (!p) return;
+        var pc = p.pc;
+        pc.setRemoteDescription(data.sdp).then(function () {
+          pc.getTransceivers().forEach(function (t) {
+            var kind = t.receiver && t.receiver.track ? t.receiver.track.kind : null;
+            if (!kind) return;
+            t.__kind = kind;
+            t.direction = "sendrecv";
+            t.sender.replaceTrack((kind === "audio" ? local.audio : currentVideoTrack()) || null).catch(noop);
+          });
+          return pc.createAnswer();
+        }).then(function (a) { return pc.setLocalDescription(a); })
+          .then(function () { send(from, "signal", { sdp: pc.localDescription }); flush(p); })
+          .catch(function (e) { console.warn("answer", e); });
+      } else if (data.sdp.type === "answer" && p) {
+        p.pc.setRemoteDescription(data.sdp).then(function () { flush(p); }).catch(function (e) { console.warn("setAnswer", e); });
+      }
+    } else if (data.candidate && p) {
+      if (p.pc.remoteDescription && p.pc.remoteDescription.type) p.pc.addIceCandidate(data.candidate).catch(noop);
+      else p.pending.push(data.candidate);
+    }
+  }
+  function flush(p) { var l = p.pending; p.pending = []; l.forEach(function (c) { p.pc.addIceCandidate(c).catch(noop); }); }
+  function removePeer(id) {
+    var p = peers[id];
+    if (!p) return;
+    try { p.pc.close(); } catch (e) {}
+    try { if (p.srcNode) p.srcNode.disconnect(); if (p.gain) p.gain.disconnect(); } catch (e) {}
+    if (p.tile && p.tile.parentNode) p.tile.parentNode.removeChild(p.tile);
+    if (p.audioEl && p.audioEl.parentNode) p.audioEl.parentNode.removeChild(p.audioEl);
+    delete peers[id];
+  }
+
+  function onMessage(m) {
+    if (m.type === "signal") return onSignal(m.from, m.data || {});
+    var p = peers[m.from];
+    if (m.type === "state" && p) {
+      var hadHand = p.state && p.state.hand;
+      p.state = m.data;
+      if (!hadHand && p.state.hand) { toast("✋ " + p.name + " さんが手を挙げました"); }
+      renderAll();
+      return;
+    }
+    if (m.type === "chat") {
+      var d = m.data || {};
+      addChat({ name: p ? shownName(p) : d.name, rawName: d.name, text: d.text, mine: false, pm: !!d.private, fromId: m.from });
+      return;
+    }
+    if (m.type === "reaction" && p) showReaction(m.data.emoji, p.name);
+  }
+
+  // ---------- 音声 (参加者ごとの音量・ミュート) ----------
+  function volKey(uid) { return "talk_vol_" + uid; }
+  function getVol(uid) { var v = parseInt(lsGet(volKey(uid)) || "100", 10); return isNaN(v) ? 100 : Math.max(0, Math.min(200, v)); }
+  function getMute(uid) { return lsGet("talk_mute_" + uid) === "1"; }
+  function setVol(uid, v) { lsSet(volKey(uid), String(v)); }
+  function setMute(uid, m) { if (m) lsSet("talk_mute_" + uid, "1"); else lsDel("talk_mute_" + uid); }
+
+  function attachAudio(p, track) {
+    if (!p.audioEl) {
+      p.audioEl = document.createElement("audio");
+      p.audioEl.autoplay = true;
+      p.audioEl.setAttribute("playsinline", "");
+      $("audios").appendChild(p.audioEl);
+    }
+    var ms = new MediaStream([track]);
+    p.audioEl.srcObject = ms;
+    if (actx) {
+      // Web Audio で音量を 0〜200% まで調整 (スマホでも効く)。要素はミュートして再生だけ続ける
+      p.audioEl.muted = true;
+      try {
+        if (p.srcNode) p.srcNode.disconnect();
+        p.srcNode = actx.createMediaStreamSource(ms);
+        if (!p.gain) { p.gain = actx.createGain(); p.gain.connect(actx.destination); }
+        p.srcNode.connect(p.gain);
+        p.analyser = actx.createAnalyser(); p.analyser.fftSize = 512;
+        p.srcNode.connect(p.analyser);
+      } catch (e) { p.gain = null; p.audioEl.muted = false; }
+    } else p.audioEl.muted = false;
+    p.audioEl.play().catch(noop);
+    applyVolume(p);
+  }
+  function applyVolume(p) {
+    var v = getVol(p.userId), m = getMute(p.userId), g = m ? 0 : v / 100;
+    if (p.gain) p.gain.gain.value = g;
+    else if (p.audioEl) { p.audioEl.volume = Math.min(1, g); p.audioEl.muted = g === 0; }
+    if (p.tile) p.tile.classList.toggle("locmuted", m || v === 0);
+  }
+  // Web Audio が動かない端末では通常の再生に切り替える
+  function checkAudio() {
+    if (!actx) return;
+    if (actx.state !== "running") { try { actx.resume(); } catch (e) {} }
+    setTimeout(function () {
+      if (!actx || actx.state === "running") return;
+      Object.keys(peers).forEach(function (id) {
+        var p = peers[id];
+        try { if (p.srcNode) p.srcNode.disconnect(); if (p.gain) p.gain.disconnect(); } catch (e) {}
+        p.gain = null; p.srcNode = null;
+        if (p.audioEl) { p.audioEl.muted = false; p.audioEl.play().catch(noop); }
+        applyVolume(p);
+      });
+      try { actx.close(); } catch (e) {}
+      actx = null;
+    }, 1500);
+  }
+  document.addEventListener("pointerdown", function () { if (actx && actx.state === "suspended") actx.resume().catch(noop); }, true);
+
+  function setupLocalMeter() {
+    localMeter = null;
+    if (!actx || !local.audio) return;
+    try {
+      var src = actx.createMediaStreamSource(new MediaStream([local.audio]));
+      var an = actx.createAnalyser(); an.fftSize = 512; src.connect(an);
+      localMeter = an;
+    } catch (e) {}
+  }
+  var meterBuf = new Uint8Array(256);
+  function level(an) { an.getByteFrequencyData(meterBuf); var s = 0; for (var i = 0; i < meterBuf.length; i++) s += meterBuf[i]; return s / meterBuf.length; }
+  function meterTick() {
+    var changed = false;
+    Object.keys(peers).forEach(function (id) {
+      var p = peers[id];
+      if (!p.analyser || !p.tile) return;
+      var sp = level(p.analyser) > 18 && p.state.mic && !getMute(p.userId);
+      if (sp !== p.speaking) { p.speaking = sp; p.tile.classList.toggle("speaking", sp); }
+      if (sp && lastSpeaker !== id && Date.now() - lastSpeakerAt > 2000) { lastSpeaker = id; lastSpeakerAt = Date.now(); changed = true; }
+    });
+    if (selfTile && localMeter) selfTile.classList.toggle("speaking", local.mic && level(localMeter) > 18);
+    if (changed && viewMode === "list" && !pinned) layout();
+  }
+
+  // ---------- タイル ----------
+  var SVG_MIC_OFF = '<svg class="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="2" y1="2" x2="22" y2="22"/><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12"/></svg>';
+  var SVG_MOD = '<svg class="i-mod" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2l8 3v6c0 5.25-3.4 9.74-8 11-4.6-1.26-8-5.75-8-11V5l8-3z"/></svg>';
+  var SVG_LOC = '<svg class="i-loc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+  function makeTile() {
+    var tile = document.createElement("div");
+    tile.className = "tile";
+    tile.innerHTML = '<video autoplay playsinline muted></video><div class="avatar"><span></span></div><div class="status">接続中…</div><div class="pin">固定中</div><div class="hand">✋</div><div class="label">' + SVG_MOD + SVG_MIC_OFF + SVG_LOC + '<span class="nm"></span></div>';
+    return tile;
+  }
+  function paintTile(tile, p, label) {
+    tile.querySelector(".nm").textContent = label;
+    var av = tile.querySelector(".avatar span");
+    av.textContent = initial(p.name);
+    av.style.background = colorOf(p.name).grad;
+    var st = p.state || {};
+    tile.classList.toggle("muted", !st.mic);
+    tile.classList.toggle("nocam", !st.cam && !st.screen);
+    tile.classList.toggle("screen", !!st.screen);
+    tile.classList.toggle("hand", !!st.hand);
+    tile.classList.toggle("mod", isMod(p.userId));
+    tile.classList.toggle("pinned", pinned === p.id);
+  }
+  var selfTile = null;
+  function addSelfTile() {
+    selfTile = makeTile();
+    selfTile.classList.add("self");
+    selfTile.dataset.id = "self";
+    selfTile.addEventListener("click", function () { onTileClick("self"); });
+    $("grid").appendChild(selfTile);
+    refreshSelfVideo();
+  }
+  function refreshSelfVideo() {
+    if (!selfTile) return;
+    var v = selfTile.querySelector("video");
+    var t = currentVideoTrack();
+    var cur = v.srcObject && v.srcObject.getVideoTracks()[0];
+    if (cur !== t) { v.srcObject = t ? new MediaStream([t]) : null; if (t) v.play().catch(noop); }
+    paintTile(selfTile, { id: "self", userId: myUserId, name: myName, state: myState() }, shownSelf() + " (あなた)");
+  }
+  function shownSelf() { return shownName({ name: myName, tag: (myUserId || "").slice(0, 4) }); }
+  function addTile(p) {
+    var tile = makeTile();
+    tile.classList.add("connecting");
+    tile.dataset.id = p.id;
+    tile.addEventListener("click", function () { onTileClick(p.id); });
+    p.tile = tile;
+    p.video = tile.querySelector("video");
+    $("grid").appendChild(tile);
+  }
+  function onTileClick(id) {
+    if (viewMode !== "list") return;
+    pinned = (pinned === id) ? null : id;
+    layout(); renderTiles();
+  }
+
+  function orderedIds() {
+    return ["self"].concat(Object.keys(peers).sort(function (a, b) { return peers[a].joinedAt - peers[b].joinedAt; }));
+  }
+  function tileOf(id) { return id === "self" ? selfTile : (peers[id] && peers[id].tile); }
+  function place(tile, parent) {
+    if (!tile || tile.parentNode === parent) return;
+    parent.appendChild(tile);
+    var v = tile.querySelector("video"); if (v && v.srcObject) v.play().catch(noop);
+  }
+  function layout() {
+    var ids = orderedIds();
+    var stage = $("stage");
+    if (viewMode === "tile") {
+      ids.forEach(function (id) { place(tileOf(id), $("grid")); });
+      var n = ids.length, w = $("grid").clientWidth || stage.clientWidth, h = $("grid").clientHeight || stage.clientHeight;
+      var cols = 1;
+      if (w < 560) cols = n <= 2 ? 1 : 2;
+      else if (n === 2) cols = (w / Math.max(1, h) > 1.1) ? 2 : 1;
+      else if (n >= 3 && n <= 4) cols = 2;
+      else if (n >= 5 && n <= 6) cols = 3;
+      else if (n > 6) cols = 4;
+      $("grid").style.setProperty("--cols", cols);
+    } else {
+      var main = pinned && tileOf(pinned) ? pinned : null;
+      if (!main) {
+        var sharer = ids.filter(function (id) { return id !== "self" && peers[id].state && peers[id].state.screen; })[0];
+        main = sharer || (lastSpeaker && peers[lastSpeaker] ? lastSpeaker : null) || ids[1] || "self";
+      }
+      mainId = main;
+      ids.forEach(function (id) { place(tileOf(id), id === main ? $("mainArea") : $("strip")); });
+    }
+    var others = Object.keys(peers).length;
+    $("waiting").hidden = others > 0;
+    $("peopleCount").textContent = (others + 1) + "人";
+  }
+  function applyView() {
+    $("stage").className = viewMode === "list" ? "listview" : "tileview";
+    $("viewLabel").textContent = viewMode === "list" ? "タイルビュー" : "一覧ビュー";
+    $("viewBtn").querySelector(".v-tile").style.display = viewMode === "list" ? "" : "none";
+    $("viewBtn").querySelector(".v-list").style.display = viewMode === "list" ? "none" : "";
+    if (viewMode === "tile") pinned = null;
+    layout(); renderTiles();
+  }
+  $("viewBtn").addEventListener("click", function () {
+    viewMode = viewMode === "list" ? "tile" : "list";
+    lsSet("talk_view", viewMode);
+    applyView();
+    toast(viewMode === "list" ? "一覧ビュー (クリックで大きく表示する人を固定)" : "タイルビュー");
+  });
+  window.addEventListener("resize", layout);
+
+  function renderTiles() {
+    refreshSelfVideo();
+    Object.keys(peers).forEach(function (id) { var p = peers[id]; paintTile(p.tile, p, shownName(p)); applyVolume(p); });
+  }
+  function renderAll() {
+    layout(); renderTiles(); renderPeople(); renderChatTo(); renderKnocks(); updateControls();
+    $("lockBadge").hidden = !roomInfo.hasPassword;
+  }
+
+  // ---------- 経過時間 ----------
+  function updateTimer() {
+    var start = roomInfo.startedAt;
+    if (!start) { $("timer").textContent = "00:00"; return; }
+    var s = Math.max(0, Math.floor((Date.now() + clockOffset - start) / 1000));
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    var two = function (x) { return (x < 10 ? "0" : "") + x; };
+    $("timer").textContent = (h ? h + ":" + two(m) : two(m)) + ":" + two(ss);
+  }
+
+  // ---------- 操作ボタン ----------
+  function updateControls() {
+    var mb = $("micBtn"), cb = $("camBtn"), sb = $("screenBtn"), hb = $("handBtn");
+    mb.classList.toggle("off", !local.mic);
+    mb.querySelector(".i-on").style.display = local.mic ? "" : "none";
+    mb.querySelector(".i-off").style.display = local.mic ? "none" : "";
+    mb.querySelector(".tip").textContent = local.mic ? "マイクをオフ" : "マイクをオン";
+    cb.classList.toggle("off", !local.cam);
+    cb.querySelector(".i-on").style.display = local.cam ? "" : "none";
+    cb.querySelector(".i-off").style.display = local.cam ? "none" : "";
+    cb.querySelector(".tip").textContent = local.cam ? "カメラをオフ" : "カメラをオン";
+    sb.classList.toggle("active", !!local.screen);
+    sb.querySelector(".tip").textContent = local.screen ? "共有を停止" : "画面共有";
+    var canShare = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+    sb.disabled = !canShare; sb.style.opacity = canShare ? "" : ".4";
+    $("mScreen").hidden = !canShare;
+    $("mScreen").querySelector("span").textContent = local.screen ? "画面共有を停止" : "画面共有";
+    hb.classList.toggle("handon", local.hand);
+    hb.querySelector(".tip").textContent = local.hand ? "手を下ろす" : "手を挙げる";
+    $("mHand").querySelector("span").textContent = local.hand ? "手を下ろす" : "手を挙げる";
+    var n = Object.keys(knocks).length;
+    $("peopleBadge").textContent = String(n);
+    $("peopleBadge").classList.toggle("show", n > 0 && amMod());
+  }
+  function stateChanged() { updateControls(); refreshSelfVideo(); renderPeople(); sendState(); }
+
+  function setMic(on) {
+    if (on && !local.audio) {
+      getMedia({ audio: AUDIO_C }).then(function (s) {
+        local.audio = s.getAudioTracks()[0];
+        local.mic = true;
+        replaceAll("audio", local.audio);
+        setupLocalMeter();
+        stateChanged();
+      }).catch(function () { toast("マイクを使えません。ブラウザの設定で許可してください。"); });
+      return;
+    }
+    local.mic = !!on && !!local.audio;
+    if (local.audio) local.audio.enabled = local.mic;
+    lsSet("talk_mic", local.mic ? "1" : "0");
+    stateChanged();
+  }
+  function setCam(on) {
+    if (!on) {
+      stopBg();
+      if (local.video) { try { local.video.stop(); } catch (e) {} local.video = null; }
+      local.cam = false;
+      lsSet("talk_cam", "0");
+      refreshVideoSenders();
+      stateChanged();
+      return;
+    }
+    getMedia({ video: VIDEO_C }).then(function (s) {
+      local.video = s.getVideoTracks()[0];
+      local.cam = true;
+      lsSet("talk_cam", "1");
+      if (bg.mode !== "none") startBg(); else refreshVideoSenders();
+      stateChanged();
+    }).catch(function () { toast("カメラを使えません。ブラウザの設定で許可してください。"); });
+  }
+  $("micBtn").addEventListener("click", function () { setMic(!local.mic); });
+  $("camBtn").addEventListener("click", function () { setCam(!local.cam); });
+
+  function stopScreen() {
+    if (!local.screen) return;
+    try { local.screen.stop(); } catch (e) {}
+    local.screen = null;
+    refreshVideoSenders();
+    stateChanged();
+  }
+  function toggleScreen() {
+    if (local.screen) return stopScreen();
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) { toast("この端末は画面共有に対応していません。"); return; }
+    navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 15 } }, audio: false }).then(function (s) {
+      local.screen = s.getVideoTracks()[0];
+      local.screen.addEventListener("ended", stopScreen);
+      refreshVideoSenders();
+      stateChanged();
+    }).catch(function (e) { if (e && e.name !== "NotAllowedError") toast("画面共有を開始できませんでした。"); });
+  }
+  $("screenBtn").addEventListener("click", toggleScreen);
+
+  function setHand(on) { local.hand = !!on; stateChanged(); if (on) toast("手を挙げました"); }
+  $("handBtn").addEventListener("click", function () { setHand(!local.hand); });
+
+  // モデレーターからの指示
+  function onForce(d) {
+    var by = d.by ? "モデレーター (" + d.by + ")" : "モデレーター";
+    if (d.what === "cam" && local.cam) { setCam(false); toast(by + " がカメラをオフにしました"); }
+    else if (d.what === "screen" && local.screen) { stopScreen(); toast(by + " が画面共有を停止しました"); }
+    else if (d.what === "mic" && local.mic) { setMic(false); toast(by + " がマイクをミュートしました"); }
+    else if (d.what === "hand" && local.hand) { local.hand = false; stateChanged(); toast(by + " があなたの手を下ろしました"); }
+    else sendState();
+  }
+
+  // ---------- ポップアップ (リアクション / その他) ----------
+  function closePops(except) {
+    ["reactPop", "morePop"].forEach(function (id) { if (id !== except) $(id).hidden = true; });
+    $("reactBtn").classList.toggle("active", !$("reactPop").hidden);
+    $("moreBtn").classList.toggle("active", !$("morePop").hidden);
+  }
+  REACTIONS.forEach(function (em) {
+    var b = document.createElement("button");
+    b.type = "button"; b.textContent = em; b.setAttribute("aria-label", "リアクション " + em);
+    b.addEventListener("click", function () {
+      showReaction(em, myName + " (あなた)");
+      send(null, "reaction", { emoji: em });
+      closePops();
+    });
+    $("reactPop").appendChild(b);
+  });
+  $("reactBtn").addEventListener("click", function (e) { e.stopPropagation(); $("reactPop").hidden = !$("reactPop").hidden; closePops("reactPop"); });
+  $("moreBtn").addEventListener("click", function (e) { e.stopPropagation(); $("morePop").hidden = !$("morePop").hidden; closePops("morePop"); });
+  document.addEventListener("click", function (e) { if (!e.target.closest || !e.target.closest(".pop")) closePops(); });
+  $("mScreen").addEventListener("click", function () { closePops(); toggleScreen(); });
+  $("mHand").addEventListener("click", function () { closePops(); setHand(!local.hand); });
+  $("mBg").addEventListener("click", function () { closePops(); openBgModal(); });
+
+  function showReaction(emoji, name) {
+    var layer = $("reactLayer");
+    if (layer.children.length > 24) layer.removeChild(layer.firstChild);
+    var f = document.createElement("div");
+    f.className = "fly";
+    f.style.left = (8 + Math.random() * 78) + "%";
+    var e = document.createElement("div"); e.className = "e"; e.textContent = emoji;
+    var n = document.createElement("div"); n.className = "n"; n.textContent = name;
+    f.appendChild(e); f.appendChild(n);
+    layer.appendChild(f);
+    setTimeout(function () { if (f.parentNode) f.parentNode.removeChild(f); }, 3300);
+  }
+
+  // ---------- サイドパネル ----------
+  function openSide(which) {
+    var chat = $("chat"), people = $("people");
+    if (which === "chat") { chat.hidden = !chat.hidden; people.hidden = true; }
+    else if (which === "people") { people.hidden = !people.hidden; chat.hidden = true; }
+    else { chat.hidden = true; people.hidden = true; }
+    $("chatBtn").classList.toggle("active", !chat.hidden);
+    $("peopleBtn").classList.toggle("active", !people.hidden);
+    if (!chat.hidden) { unread = 0; updateBadge(); var log = $("chatLog"); log.scrollTop = log.scrollHeight; }
+    if (!people.hidden) renderPeople(true);
+    layout();
+  }
+  $("chatBtn").addEventListener("click", function () { openSide("chat"); if (!$("chat").hidden) $("chatInput").focus(); });
+  $("peopleBtn").addEventListener("click", function () { openSide("people"); });
+  $("chatClose").addEventListener("click", function () { openSide(null); });
+  $("peopleClose").addEventListener("click", function () { openSide(null); });
+
+  // ---------- チャット (全員 / 個別) ----------
+  function updateBadge() {
+    var b = $("chatBadge");
+    b.textContent = unread > 9 ? "9+" : String(unread);
+    b.classList.toggle("show", unread > 0);
+  }
+  function chatOpen() { return !$("chat").hidden; }
+  function appendChat(node) {
+    var log = $("chatLog");
+    var empty = log.querySelector(".chatEmpty");
+    if (empty) empty.remove();
+    log.appendChild(node);
+    log.scrollTop = log.scrollHeight;
+  }
+  function addChat(o) {
+    var d = document.createElement("div");
+    d.className = "cm" + (o.mine ? " me" : "") + (o.pm ? " pm" : "");
+    var who = document.createElement("div"); who.className = "who";
+    var nm = document.createElement("b");
+    nm.textContent = o.mine ? "あなた" : o.name;
+    nm.style.color = colorOf(o.mine ? myName : o.rawName).solid;
+    who.appendChild(nm);
+    if (o.pm) {
+      var tg = document.createElement("span"); tg.className = "pmtag";
+      tg.textContent = o.mine ? " → " + o.toName + " (個別)" : " → あなた (個別)";
+      who.appendChild(tg);
+    }
+    var tx = document.createElement("div"); tx.className = "txt"; tx.textContent = o.text;
+    d.appendChild(who); d.appendChild(tx);
+    if (!o.mine && o.pm && o.fromId) {
+      d.style.cursor = "pointer"; d.title = "クリックで個別に返信";
+      d.addEventListener("click", function () { if (peers[o.fromId]) { $("chatTo").value = o.fromId; onChatTo(); $("chatInput").focus(); } });
+    }
+    appendChat(d);
+    if (!o.mine && !chatOpen()) {
+      unread++; updateBadge();
+      toast((o.pm ? "(個別) " : "") + o.name + ": " + (o.text.length > 40 ? o.text.slice(0, 40) + "…" : o.text));
+    }
+  }
+  function sysChat(text) {
+    var d = document.createElement("div");
+    d.className = "cm sys"; d.textContent = text;
+    appendChat(d);
+  }
+  function renderChatTo() {
+    var sel = $("chatTo"), cur = sel.value;
+    sel.innerHTML = '<option value="">全員</option>';
+    Object.keys(peers).forEach(function (id) {
+      var o = document.createElement("option");
+      o.value = id; o.textContent = shownName(peers[id]) + " さんだけ (個別)";
+      sel.appendChild(o);
+    });
+    sel.value = peers[cur] ? cur : "";
+    onChatTo();
+  }
+  function onChatTo() {
+    var pm = !!$("chatTo").value;
+    $("chatTo").classList.toggle("pm", pm);
+    $("chatInput").placeholder = pm ? "個別メッセージを入力" : "メッセージを入力";
+  }
+  $("chatTo").addEventListener("change", onChatTo);
+  function openPm(id) {
+    if (!peers[id]) return;
+    if ($("chat").hidden) openSide("chat");
+    renderChatTo();
+    $("chatTo").value = id; onChatTo();
+    $("chatInput").focus();
+  }
+
+  $("chatForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = $("chatInput").value.trim();
+    if (!v) return;
+    $("chatInput").value = "";
+    if (v.charAt(0) === "/") return runCommand(v);
+    var to = $("chatTo").value;
+    if (to && !peers[to]) { toast("その人はもう退出しました"); renderChatTo(); return; }
+    addChat({ name: myName, text: v, mine: true, pm: !!to, toName: to ? shownName(peers[to]) : "" });
+    send(to || null, "chat", { text: v });
+  });
+
+  // ---------- 開発者用コマンド ----------
+  // 「/モデレーター4890」などは、開発者キー (サーバーの TALK_DEV_KEY) を登録した開発者だけが使える。
+  // キーはチャットに送られず、サーバーで照合する。キーを知らない人が打っても権限は変わらない。
+  function runCommand(v) {
+    var parts = v.split(/\s+/), cmd = parts[0];
+    if (cmd === "/devkey" || cmd === "/開発者キー") {
+      var key = parts.slice(1).join(" ");
+      if (!key) { lsDel("talk_devkey"); toast("開発者キーを削除しました"); return; }
+      post("/dev", authBody({ key: key, cmd: "check" })).then(function (j) {
+        if (j.ok) { lsSet("talk_devkey", key); toast("開発者キーを登録しました"); }
+        else { lsDel("talk_devkey"); toast(j.__status === 429 ? "しばらく時間をおいてください" : "このコマンドは使えません"); }
+      });
+      return;
+    }
+    if (cmd === "/モデレーター4890" || cmd === "/moderator4890") {
+      var k = lsGet("talk_devkey");
+      if (!k) { toast("このコマンドは使えません"); return; }
+      post("/dev", authBody({ key: k, cmd: "mod" })).then(function (j) {
+        toast(j.ok ? "開発者としてモデレーター権限を有効にしました" : (j.__status === 429 ? "しばらく時間をおいてください" : "このコマンドは使えません"));
+      });
+      return;
+    }
+    toast("このコマンドは使えません");
+  }
+
+  // ---------- 参加者一覧 ----------
+  var SVG_MIC = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/></svg>';
+  var SVG_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>';
+  var SVG_SCR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+  var SVG_SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>';
+  var SVG_SPK_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+
+  var peopleDirty = false;
+  function renderPeople(force) {
+    var body = $("peopleBody");
+    if ($("people").hidden && !force) { peopleDirty = true; return; }
+    // 音量スライダーを動かしている最中は作り直さない
+    if (!force && body.contains(document.activeElement) && /^(INPUT|SELECT)$/.test(document.activeElement.tagName)) { peopleDirty = true; return; }
+    peopleDirty = false;
+    var list = everyone();
+    $("peopleTitle").textContent = "参加者 (" + list.length + "人)";
+    var html = "";
+    var mod = amMod();
+
+    if (mod) {
+      var ks = Object.keys(knocks);
+      if (ks.length) {
+        html += '<div class="psec"><h4>入室リクエスト</h4>';
+        ks.forEach(function (id) { html += knockHtml(knocks[id]); });
+        html += "</div>";
+      }
+      html += '<div class="psec"><h4>部屋の設定 (モデレーター)</h4><div class="pwbox">' +
+        '<div class="st">参加パスワード: ' + (roomInfo.hasPassword ? "<b>設定中</b>" : "なし") + "</div>" +
+        '<div class="row"><input class="tinput" id="pwSet" type="password" maxlength="64" placeholder="新しいパスワード" autocomplete="new-password" />' +
+        '<button class="mini pri" data-act="pwsave" type="button">設定</button>' +
+        (roomInfo.hasPassword ? '<button class="mini" data-act="pwclear" type="button">解除</button>' : "") +
+        "</div></div></div>";
+    }
+
+    var sorted = list.slice().sort(function (a, b) {
+      if (a.self) return -1; if (b.self) return 1;
+      var ha = a.state && a.state.hand ? 1 : 0, hb = b.state && b.state.hand ? 1 : 0;
+      if (ha !== hb) return hb - ha;
+      return a.joinedAt - b.joinedAt;
+    });
+    html += '<div class="psec"><h4>参加中</h4>';
+    sorted.forEach(function (p) { html += personHtml(p, mod); });
+    html += "</div>";
+    body.innerHTML = html;
+  }
+  function knockHtml(k) {
+    var label = k.reason === "kicked" ? "以前に退出させた人です" : "パスワードを知らない人です";
+    return '<div class="knock" data-id="' + esc(k.id) + '"><div class="av" style="background:' + colorOf(k.name).grad + '">' + esc(initial(k.name)) + '</div>' +
+      '<div class="t"><b>' + esc(k.name) + '</b> さんが部屋に入ろうとしています<small>' + label + " · ID #" + esc(k.tag) + "</small></div>" +
+      '<button class="mini pri" data-act="admit" data-id="' + esc(k.id) + '" type="button">許可</button>' +
+      '<button class="mini danger" data-act="deny" data-id="' + esc(k.id) + '" type="button">拒否</button></div>';
+  }
+  function personHtml(p, mod) {
+    var st = p.state || {};
+    var name = p.self ? myName : p.name;
+    var badges = "";
+    if (p.self) badges += '<span class="bd me">あなた</span>';
+    if (p.userId && p.userId === roomInfo.owner) badges += '<span class="bd mod">作成者</span>';
+    if (isMod(p.userId)) badges += '<span class="bd mod">モデレーター</span>';
+    if (st.hand) badges += '<span class="bd hand">✋ 挙手</span>';
+    if (st.screen) badges += '<span class="bd">画面共有中</span>';
+    var icons = '<span class="' + (st.mic ? "" : "off") + '" title="' + (st.mic ? "マイク ON" : "マイク OFF") + '">' + (st.mic ? SVG_MIC : SVG_MIC_OFF.replace('class="i-mic"', "")) + "</span>" +
+      '<span class="' + (st.cam ? "" : "off") + '" title="' + (st.cam ? "カメラ ON" : "カメラ OFF") + '">' + SVG_CAM + "</span>";
+    var h = '<div class="prow"><div class="top"><div class="av" style="background:' + colorOf(name).grad + '">' + esc(initial(name)) + "</div>" +
+      '<div class="who"><div class="nm">' + esc(name) + '<span class="tg">#' + esc(p.tag || "") + "</span></div>" +
+      '<div class="badges">' + badges + "</div></div><div class=\"ic\">" + icons + "</div></div>";
+    if (p.self) {
+      h += '<div class="acts"><button class="mini" data-act="selfhand" type="button">' + (local.hand ? "手を下ろす" : "✋ 手を挙げる") + "</button></div>";
+    } else {
+      var v = getVol(p.userId), m = getMute(p.userId);
+      h += '<div class="vol"><button class="iconbtn' + (m ? " on" : "") + '" data-act="lmute" data-id="' + esc(p.id) + '" type="button" title="' + (m ? "ミュート解除 (自分の画面だけ)" : "ミュート (自分の画面だけ)") + '">' + (m ? SVG_SPK_OFF : SVG_SPK) + "</button>" +
+        '<input type="range" min="0" max="200" step="5" value="' + v + '" data-vol="' + esc(p.id) + '" aria-label="' + esc(name) + ' さんの音量" />' +
+        '<span class="pct">' + v + "%</span></div>";
+      h += '<div class="acts"><button class="mini" data-act="pm" data-id="' + esc(p.id) + '" type="button">個別メッセージ</button></div>';
+      if (mod) {
+        var isM = isMod(p.userId), isOwner = p.userId === roomInfo.owner, iAmOwner = myUserId === roomInfo.owner;
+        var prot = isOwner && !iAmOwner;
+        h += '<details class="modm"><summary>モデレーター操作</summary><div class="acts">';
+        if (!isM) h += '<button class="mini" data-act="promote" data-id="' + esc(p.id) + '" type="button">モデレーターにする</button>';
+        else if (!prot) h += '<button class="mini" data-act="demote" data-id="' + esc(p.id) + '" type="button">モデレーターを解除</button>';
+        if (!prot) {
+          if (st.mic) h += '<button class="mini" data-act="mic" data-id="' + esc(p.id) + '" type="button">マイクをミュート</button>';
+          if (st.cam) h += '<button class="mini" data-act="cam" data-id="' + esc(p.id) + '" type="button">カメラをオフ</button>';
+          if (st.screen) h += '<button class="mini" data-act="screen" data-id="' + esc(p.id) + '" type="button">画面共有を停止</button>';
+        }
+        if (st.hand) h += '<button class="mini" data-act="hand" data-id="' + esc(p.id) + '" type="button">手を下ろす</button>';
+        if (!prot) h += '<button class="mini danger" data-act="kick" data-id="' + esc(p.id) + '" type="button">強制退出</button>';
+        h += "</div></details>";
+      }
+    }
+    return h + "</div>";
+  }
+
+  var MOD_ERR = {
+    "owner": "作成者には実行できません",
+    "last moderator": "最後のモデレーターは解除できません",
+    "not moderator": "モデレーター権限がありません",
+    "full": "部屋が満員です",
+    "no peer": "その人はもう退出しました",
+    "no such request": "このリクエストはもう終わっています",
+  };
+  function modAction(action, target, value) {
+    return post("/mod", authBody({ action: action, target: target, value: value })).then(function (j) {
+      if (!j.ok) toast(MOD_ERR[j.error] || "操作できませんでした");
+      return j;
+    });
+  }
+  var openDetails = {};
+  function handleAct(btn) {
+    var act = btn.dataset.act, id = btn.dataset.id, p = id && peers[id];
+    switch (act) {
+      case "admit": modAction("admit", id).then(function (j) { if (j.ok) { delete knocks[id]; renderKnocks(); renderPeople(); } }); break;
+      case "deny": modAction("deny", id).then(function (j) { if (j.ok) { delete knocks[id]; renderKnocks(); renderPeople(); } }); break;
+      case "pwsave": {
+        var v = ($("pwSet") || {}).value || "";
+        if (!v) { toast("パスワードを入力してください"); break; }
+        modAction("password", null, v).then(function (j) { if (j.ok) toast("参加パスワードを設定しました"); });
+        break;
+      }
+      case "pwclear": modAction("password", null, "").then(function (j) { if (j.ok) toast("参加パスワードを解除しました"); }); break;
+      case "selfhand": setHand(!local.hand); break;
+      case "lmute":
+        if (!p) break;
+        setMute(p.userId, !getMute(p.userId)); applyVolume(p); renderPeople(true);
+        toast(getMute(p.userId) ? p.name + " さんの音を消しました (自分の画面だけ)" : p.name + " さんの音を戻しました");
+        break;
+      case "pm": openPm(id); break;
+      case "promote": modAction("promote", id).then(function (j) { if (j.ok && p) toast(p.name + " さんをモデレーターにしました"); }); break;
+      case "demote": modAction("demote", id).then(function (j) { if (j.ok && p) toast(p.name + " さんのモデレーターを解除しました"); }); break;
+      case "mic": case "cam": case "screen": case "hand":
+        modAction(act, id).then(function (j) { if (j.ok && p) toast({ mic: "マイクをミュートしました", cam: "カメラをオフにしました", screen: "画面共有を停止しました", hand: "手を下ろしました" }[act]); });
+        break;
+      case "kick":
+        if (!btn.classList.contains("armed")) {
+          btn.classList.add("armed"); btn.textContent = "本当に退出させる";
+          setTimeout(function () { btn.classList.remove("armed"); btn.textContent = "強制退出"; }, 3500);
+          break;
+        }
+        modAction("kick", id).then(function (j) { if (j.ok && p) toast(p.name + " さんを退出させました"); });
+        break;
+    }
+  }
+  $("peopleBody").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-act]");
+    if (btn) handleAct(btn);
+  });
+  $("peopleBody").addEventListener("input", function (e) {
+    var id = e.target.dataset && e.target.dataset.vol;
+    if (!id || !peers[id]) return;
+    var p = peers[id], v = parseInt(e.target.value, 10);
+    setVol(p.userId, v);
+    if (v > 0 && getMute(p.userId)) setMute(p.userId, false);
+    applyVolume(p);
+    var pct = e.target.parentNode.querySelector(".pct"); if (pct) pct.textContent = v + "%";
+  });
+  $("peopleBody").addEventListener("change", function () { if (peopleDirty) setTimeout(function () { renderPeople(true); }, 0); });
+  $("peopleBody").addEventListener("focusout", function () { if (peopleDirty) setTimeout(function () { renderPeople(); }, 0); });
+  // モデレーター操作の開閉状態を作り直しても保つ
+  $("peopleBody").addEventListener("toggle", function (e) {
+    var row = e.target.closest && e.target.closest(".prow");
+    var b = row && row.querySelector("[data-id]");
+    if (b) openDetails[b.dataset.id] = e.target.open;
+  }, true);
+  var _renderPeople = renderPeople;
+  renderPeople = function (force) {
+    _renderPeople(force);
+    $("peopleBody").querySelectorAll("details.modm").forEach(function (d) {
+      var b = d.closest(".prow").querySelector("[data-id]");
+      if (b && openDetails[b.dataset.id]) d.open = true;
+    });
+  };
+
+  // 入室リクエストのお知らせ (モデレーターだけに表示)
+  function renderKnocks() {
+    var box = $("knocks");
+    if (!amMod()) { box.innerHTML = ""; updateControls(); return; }
+    box.innerHTML = Object.keys(knocks).map(function (id) { return knockHtml(knocks[id]); }).join("");
+    updateControls();
+  }
+  $("knocks").addEventListener("click", function (e) {
+    var btn = e.target.closest("button[data-act]");
+    if (btn) handleAct(btn);
+  });
+
+  // ---------- 招待リンク ----------
+  $("copyBtn").addEventListener("click", function () {
+    if (!room) return;
+    var link = shareLink(room);
+    var done = function () {
+      var span = $("copyBtn").querySelector("span");
+      toast("招待リンクをコピーしました (合言葉: " + room + ")");
+      if (span) { span.textContent = "コピーしました"; setTimeout(function () { span.textContent = "招待リンクをコピー"; }, 2000); }
+    };
+    var fallback = function () {
+      var ta = document.createElement("textarea");
+      ta.value = link; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); done();
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, fallback);
+    else fallback();
+  });
+
+  // ---------- 背景の置き換え ----------
+  var MP_VER = "0.10.14";
+  var MP_BASE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@" + MP_VER;
+  var MP_MODEL = "https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite";
+  var bg = { mode: lsGet("talk_bg") || "none", image: null, seg: null, segP: null, running: false, track: null, loopT: null, srcVideo: null };
+  if (bg.mode === "upload" && !lsGet("talk_bg_img")) bg.mode = "none";
+
+  function makePreset(kind) {
+    var c = document.createElement("canvas"); c.width = 1280; c.height = 720;
+    var x = c.getContext("2d"), g, i;
+    if (kind === "violet") {
+      g = x.createLinearGradient(0, 0, 1280, 720); g.addColorStop(0, "#2e1065"); g.addColorStop(.55, "#6b21a8"); g.addColorStop(1, "#9d174d");
+      x.fillStyle = g; x.fillRect(0, 0, 1280, 720);
+      [[260, 180, 420, "rgba(167,139,250,.45)"], [1040, 560, 480, "rgba(236,72,153,.35)"], [700, 80, 300, "rgba(217,70,239,.3)"]].forEach(function (b) {
+        var r = x.createRadialGradient(b[0], b[1], 0, b[0], b[1], b[2]); r.addColorStop(0, b[3]); r.addColorStop(1, "rgba(0,0,0,0)");
+        x.fillStyle = r; x.fillRect(0, 0, 1280, 720);
+      });
+    } else if (kind === "neon") {
+      x.fillStyle = "#0e0a17"; x.fillRect(0, 0, 1280, 720);
+      g = x.createLinearGradient(0, 0, 0, 720); g.addColorStop(0, "#1e1036"); g.addColorStop(.55, "#0e0a17"); g.addColorStop(1, "#2a0f3d");
+      x.fillStyle = g; x.fillRect(0, 0, 1280, 720);
+      var sun = x.createRadialGradient(640, 330, 10, 640, 330, 230); sun.addColorStop(0, "rgba(236,72,153,.9)"); sun.addColorStop(.6, "rgba(217,70,239,.35)"); sun.addColorStop(1, "rgba(0,0,0,0)");
+      x.fillStyle = sun; x.fillRect(0, 0, 1280, 720);
+      x.strokeStyle = "rgba(167,139,250,.55)"; x.lineWidth = 2;
+      for (i = 0; i <= 12; i++) { var yy = 420 + Math.pow(i / 12, 1.8) * 300; x.beginPath(); x.moveTo(0, yy); x.lineTo(1280, yy); x.stroke(); }
+      for (i = -14; i <= 14; i++) { x.beginPath(); x.moveTo(640 + i * 20, 420); x.lineTo(640 + i * 140, 720); x.stroke(); }
+    } else if (kind === "sunrise") {
+      g = x.createLinearGradient(0, 0, 0, 720); g.addColorStop(0, "#fde68a"); g.addColorStop(.45, "#fbcfe8"); g.addColorStop(1, "#c4b5fd");
+      x.fillStyle = g; x.fillRect(0, 0, 1280, 720);
+      for (i = 0; i < 26; i++) {
+        var bx = (i * 397) % 1280, by = (i * 211) % 720, br = 30 + (i * 37) % 90;
+        var bb = x.createRadialGradient(bx, by, 0, bx, by, br); bb.addColorStop(0, "rgba(255,255,255,.55)"); bb.addColorStop(1, "rgba(255,255,255,0)");
+        x.fillStyle = bb; x.beginPath(); x.arc(bx, by, br, 0, Math.PI * 2); x.fill();
+      }
+    } else if (kind === "room") {
+      g = x.createLinearGradient(0, 0, 0, 720); g.addColorStop(0, "#3b3045"); g.addColorStop(1, "#1f1a26");
+      x.fillStyle = g; x.fillRect(0, 0, 1280, 720);
+      x.fillStyle = "#2a2233"; x.fillRect(0, 520, 1280, 200);
+      x.fillStyle = "rgba(255,236,200,.18)"; x.fillRect(880, 90, 300, 220);
+      x.strokeStyle = "rgba(255,255,255,.22)"; x.lineWidth = 6; x.strokeRect(880, 90, 300, 220);
+      x.beginPath(); x.moveTo(1030, 90); x.lineTo(1030, 310); x.moveTo(880, 200); x.lineTo(1180, 200); x.stroke();
+      ["#8b5cf6", "#d946ef", "#f59e0b", "#10b981", "#ec4899", "#6366f1", "#f43f5e"].forEach(function (col, k) {
+        x.fillStyle = col; x.globalAlpha = .55; x.fillRect(110 + k * 34, 330 - (k % 3) * 18, 26, 120 + (k % 3) * 18); x.globalAlpha = 1;
+      });
+      x.fillStyle = "#4b3b2f"; x.fillRect(90, 450, 300, 14);
+      var lamp = x.createRadialGradient(640, 0, 0, 640, 0, 620); lamp.addColorStop(0, "rgba(255,220,170,.25)"); lamp.addColorStop(1, "rgba(0,0,0,0)");
+      x.fillStyle = lamp; x.fillRect(0, 0, 1280, 720);
+    }
+    return c;
+  }
+  var PRESETS = [
+    { key: "none", label: "なし" },
+    { key: "blur", label: "ぼかし" },
+    { key: "violet", label: "バイオレット" },
+    { key: "neon", label: "ネオン" },
+    { key: "sunrise", label: "あさやけ" },
+    { key: "room", label: "おへや" },
+    { key: "upload", label: "画像を選ぶ" },
+  ];
+  var presetCache = {};
+  function presetImage(key) {
+    if (key === "upload") return bg.uploadImg || null;
+    if (!presetCache[key]) presetCache[key] = makePreset(key);
+    return presetCache[key];
+  }
+  (function loadUpload() {
+    var d = lsGet("talk_bg_img");
+    if (!d) return;
+    var im = new Image();
+    im.onload = function () { bg.uploadImg = im; if (bg.mode === "upload") bg.image = im; renderBgGrid(); };
+    im.src = d;
+  })();
+
+  function loadSegmenter() {
+    if (bg.seg) return Promise.resolve(bg.seg);
+    if (bg.segP) return bg.segP;
+    bg.segP = import(MP_BASE + "/vision_bundle.mjs").then(function (mp) {
+      return mp.FilesetResolver.forVisionTasks(MP_BASE + "/wasm").then(function (files) {
+        var make = function (delegate) {
+          return mp.ImageSegmenter.createFromOptions(files, {
+            baseOptions: { modelAssetPath: MP_MODEL, delegate: delegate },
+            runningMode: "VIDEO", outputCategoryMask: false, outputConfidenceMasks: true,
+          });
+        };
+        return make("GPU").catch(function () { return make("CPU"); });
+      });
+    }).then(function (seg) { bg.seg = seg; return seg; })
+      .catch(function (e) { bg.segP = null; throw e; });
+    return bg.segP;
+  }
+
+  function stopBg() {
+    bg.running = false;
+    clearTimeout(bg.loopT);
+    if (bg.track) { try { bg.track.stop(); } catch (e) {} bg.track = null; }
+    if (bg.srcVideo) { bg.srcVideo.srcObject = null; bg.srcVideo = null; }
+  }
+  function startBg() {
+    if (bg.mode === "none" || !local.video) { stopBg(); refreshVideoSenders(); return Promise.resolve(); }
+    if (bg.mode !== "blur") bg.image = presetImage(bg.mode);
+    if (bg.running) { refreshVideoSenders(); return Promise.resolve(); }
+    $("bgStatus").textContent = "背景処理を準備しています…";
+    return loadSegmenter().then(function (seg) {
+      if (!local.video || bg.mode === "none") return;
+      runPipeline(seg);
+      $("bgStatus").textContent = "";
+    }).catch(function (e) {
+      console.warn("segmenter", e);
+      $("bgStatus").textContent = "背景処理を読み込めませんでした。通信状態を確認してください。";
+      toast("背景を変更できませんでした");
+    });
+  }
+  function runPipeline(seg) {
+    stopBg();
+    var settings = local.video.getSettings ? local.video.getSettings() : {};
+    var ar = (settings.width && settings.height) ? settings.width / settings.height : 16 / 9;
+    var W = 640, H = Math.round(640 / ar);
+    var IW = 256, IH = Math.max(64, Math.round(256 / ar));
+    var mk = function (w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+    var inC = mk(IW, IH), maskC = mk(IW, IH), personC = mk(W, H), outC = mk(W, H), tinyC = mk(48, Math.max(16, Math.round(48 / ar)));
+    var inX = inC.getContext("2d", { willReadFrequently: true }), maskX = maskC.getContext("2d"), personX = personC.getContext("2d"), outX = outC.getContext("2d"), tinyX = tinyC.getContext("2d");
+    var maskData = maskX.createImageData(IW, IH);
+    var canFilter = typeof outX.filter === "string";
+    var v = document.createElement("video");
+    v.muted = true; v.playsInline = true; v.setAttribute("playsinline", "");
+    v.srcObject = new MediaStream([local.video]);
+    v.play().catch(noop);
+    bg.srcVideo = v;
+    var lastTs = 0, hasMask = false;
+
+    var drawCover = function (ctx, img, w, h) {
+      var iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+      var s = Math.max(w / iw, h / ih), dw = iw * s, dh = ih * s;
+      ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+    };
+    var frame = function () {
+      if (!bg.running) return;
+      try {
+        if (v.readyState >= 2) {
+          inX.drawImage(v, 0, 0, IW, IH);
+          var ts = performance.now(); if (ts <= lastTs) ts = lastTs + 1; lastTs = ts;
+          seg.segmentForVideo(inC, ts, function (res) {
+            var m = res && res.confidenceMasks && res.confidenceMasks[0];
+            if (!m) return;
+            var f = m.getAsFloat32Array(), d = maskData.data;
+            for (var i = 0, j = 3; i < f.length; i++, j += 4) {
+              var a = f[i];
+              d[j] = a <= 0.3 ? 0 : a >= 0.7 ? 255 : (a - 0.3) * 637;
+            }
+            hasMask = true;
+          });
+          if (hasMask) maskX.putImageData(maskData, 0, 0);
+          // 背景
+          if (bg.mode === "blur") {
+            if (canFilter) { outX.filter = "blur(14px)"; outX.drawImage(v, -20, -20, W + 40, H + 40); outX.filter = "none"; }
+            else { tinyX.drawImage(v, 0, 0, tinyC.width, tinyC.height); outX.imageSmoothingEnabled = true; outX.drawImage(tinyC, 0, 0, W, H); }
+          } else if (bg.image) drawCover(outX, bg.image, W, H);
+          else { outX.fillStyle = "#0e0a17"; outX.fillRect(0, 0, W, H); }
+          // 人物だけを切り抜いて重ねる
+          personX.globalCompositeOperation = "copy";
+          personX.drawImage(v, 0, 0, W, H);
+          personX.globalCompositeOperation = "destination-in";
+          personX.imageSmoothingEnabled = true;
+          if (hasMask) {
+            if (canFilter) personX.filter = "blur(3px)"; // 人物のふちをなめらかに
+            personX.drawImage(maskC, 0, 0, W, H);
+            if (canFilter) personX.filter = "none";
+          }
+          personX.globalCompositeOperation = "source-over";
+          outX.drawImage(personC, 0, 0);
+        }
+      } catch (e) { console.warn("bg frame", e); }
+      bg.loopT = setTimeout(frame, 1000 / 24);
+    };
+    bg.running = true;
+    var stream = outC.captureStream(24);
+    bg.track = stream.getVideoTracks()[0];
+    frame();
+    refreshVideoSenders();
+  }
+
+  function renderBgGrid() {
+    var grid = $("bgGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    PRESETS.forEach(function (p) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "bgopt" + (bg.mode === p.key ? " sel" : "");
+      b.textContent = p.label;
+      if (p.key === "blur") b.style.background = "linear-gradient(135deg, #3b2a5a, #1a1230)";
+      else if (p.key !== "none") {
+        var img = presetImage(p.key);
+        if (img) {
+          var t = document.createElement("canvas"); t.width = 192; t.height = 108;
+          var tx = t.getContext("2d"), iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height, s = Math.max(192 / iw, 108 / ih);
+          tx.drawImage(img, (192 - iw * s) / 2, (108 - ih * s) / 2, iw * s, ih * s);
+          b.style.backgroundImage = "url(" + t.toDataURL("image/jpeg", .8) + ")";
+        } else if (p.key === "upload") b.style.background = "repeating-linear-gradient(45deg, #181127, #181127 8px, #1f1633 8px, #1f1633 16px)";
+      }
+      b.addEventListener("click", function () {
+        if (p.key === "upload" && (!bg.uploadImg || bg.mode === "upload")) { $("bgFile").click(); return; }
+        chooseBg(p.key);
+      });
+      grid.appendChild(b);
+    });
+  }
+  function chooseBg(key) {
+    bg.mode = key;
+    lsSet("talk_bg", key);
+    renderBgGrid();
+    if (key === "none") { stopBg(); refreshVideoSenders(); $("bgStatus").textContent = ""; }
+    else if (!local.video) $("bgStatus").textContent = "カメラをオンにすると背景が反映されます。";
+    else startBg();
+    updateBgPreview();
+  }
+  $("bgFile").addEventListener("change", function () {
+    var f = this.files && this.files[0];
+    this.value = "";
+    if (!f) return;
+    var url = URL.createObjectURL(f);
+    var im = new Image();
+    im.onload = function () {
+      var c = document.createElement("canvas"); c.width = 1280; c.height = 720;
+      var x = c.getContext("2d"), s = Math.max(1280 / im.width, 720 / im.height);
+      x.drawImage(im, (1280 - im.width * s) / 2, (720 - im.height * s) / 2, im.width * s, im.height * s);
+      URL.revokeObjectURL(url);
+      var data = c.toDataURL("image/jpeg", .82);
+      lsSet("talk_bg_img", data);
+      var im2 = new Image();
+      im2.onload = function () { bg.uploadImg = im2; bg.image = im2; chooseBg("upload"); };
+      im2.src = data;
+    };
+    im.onerror = function () { toast("画像を読み込めませんでした"); };
+    im.src = url;
+  });
+  function updateBgPreview() {
+    var pv = $("bgPreview"), t = (bg.running && bg.track) || local.video || null;
+    var cur = pv.srcObject && pv.srcObject.getVideoTracks()[0];
+    if (cur === t || (!cur && !t)) return;
+    pv.srcObject = t ? new MediaStream([t]) : null;
+    if (t) pv.play().catch(noop);
+  }
+  function openBgModal() {
+    renderBgGrid();
+    $("bgModal").hidden = false;
+    $("bgStatus").textContent = local.video ? "" : "カメラをオンにすると背景が反映されます。";
+    updateBgPreview();
+    var keep = setInterval(function () { if ($("bgModal").hidden) return clearInterval(keep); updateBgPreview(); }, 1500);
+  }
+  $("bgClose").addEventListener("click", function () { $("bgModal").hidden = true; $("bgPreview").srcObject = null; });
+  $("bgModal").addEventListener("click", function (e) { if (e.target === this) $("bgClose").click(); });
+
+  // ---------- 初期化 ----------
+  (function init() {
+    var saved = lsGet("uid");
+    if (saved) $("nameInput").value = saved;
+    refreshChips();
+    if (!window.RTCPeerConnection || !window.EventSource) {
+      showError("このブラウザはビデオ通話に対応していません。最新の Chrome / Edge / Safari / Firefox を使ってください。");
+    }
+    var q = null;
+    try { q = new URLSearchParams(location.search).get("room"); } catch (e) {}
+    var code = q ? normCode(q) : null;
+    if (code) showJoin(code); else showHome();
+  })();
+})();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@ import { r as __toESM } from "../_runtime.mjs";
 import { n as require_jsx_runtime, r as require_react, t as QueryClientProvider } from "../_libs/react+tanstack__react-query.mjs";
 import { c as HeadContent, d as Outlet, f as lazyRouteComponent, g as useRouter, h as Link, m as createRootRouteWithContext, p as createFileRoute, s as Scripts, u as createRouter } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as QueryClient } from "../_libs/tanstack__query-core.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/router-aSkVT8ju.js
+//#region node_modules/.nitro/vite/services/ssr/assets/router-CTJeEykz.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
 var styles_default = "/assets/styles-DqJXn63h.css";
@@ -156,7 +156,7 @@ function RootComponent() {
 		children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Outlet, {})
 	});
 }
-var $$splitComponentImporter = () => import("./routes-D96GBNZQ.mjs");
+var $$splitComponentImporter = () => import("./routes-C8-LyYk7.mjs");
 var Route$1 = createFileRoute("/")({
 	head: () => ({ meta: [
 		{ title: "Google" },
@@ -183,24 +183,13 @@ var Route$1 = createFileRoute("/")({
 	] }),
 	component: lazyRouteComponent($$splitComponentImporter, "component")
 });
-var UPSTREAM_ORIGIN = "https://vyslo-mix-chat10041958.edgeone.dev";
-var PROXY_PREFIX = "";
-
-var __VXS = "(function(){if(window.__vxfx)return;var R=/^(https?|wss?):\\/\\/((?:[a-z0-9-]+\\.)*(?:gstatic\\.com|googleapis\\.com|firebasedatabase\\.app|firebaseio\\.com|firebasestorage\\.app|jsdelivr\\.net|unpkg\\.com))(?=[\\/?#]|$)/i;function fx(u){try{var s=String(u&&u.href?u.href:u);var m=s.match(R);if(!m)return u;var w=m[1].charAt(0).toLowerCase()===\"w\";return(w?(location.protocol===\"https:\"?\"wss://\":\"ws://\"):location.protocol+\"//\")+location.host+\"/__x/\"+m[2].toLowerCase()+s.slice(m[0].length)}catch(e){return u}}window.__vxfx=fx;var F=window.fetch;if(F)window.fetch=function(i,o){try{if(typeof i===\"string\"||(i&&i.href&&!i.url))i=fx(i);else if(i&&i.url){var n=fx(i.url);if(n!==i.url)i=new Request(n,i)}}catch(e){}return F.call(this,i,o)};var X=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(){arguments[1]=fx(arguments[1]);return X.apply(this,arguments)};var W=window.WebSocket;if(W){var NW=function(u,p){return p===undefined?new W(fx(u)):new W(fx(u),p)};NW.prototype=W.prototype;NW.CONNECTING=0;NW.OPEN=1;NW.CLOSING=2;NW.CLOSED=3;window.WebSocket=NW}var E=window.EventSource;if(E){var NE=function(u,o){return new E(fx(u),o)};NE.prototype=E.prototype;window.EventSource=NE}if(navigator.sendBeacon){var B=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,d){return B(fx(u),d)}}[[window.HTMLImageElement,\"src\"],[window.HTMLScriptElement,\"src\"],[window.HTMLLinkElement,\"href\"],[window.HTMLSourceElement,\"src\"],[window.HTMLMediaElement,\"src\"]].forEach(function(a){try{var P=a[0].prototype,d=Object.getOwnPropertyDescriptor(P,a[1]);if(!d||!d.set)return;Object.defineProperty(P,a[1],{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){return d.set.call(this,fx(v))}})}catch(e){}});var SA=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){if(n===\"src\"||n===\"href\")v=fx(v);return SA.call(this,n,v)};})();";
-var __VXT = /https?:\/\/((?:[a-z0-9-]+\.)*(?:gstatic\.com|googleapis\.com|firebasedatabase\.app|firebaseio\.com|firebasestorage\.app|jsdelivr\.net|unpkg\.com))(?=[\/"'`\s?#)\\;,]|$)/gi;
-function __vx(t, ct, request) {
-	const h = String(request.headers.get("x-forwarded-host") || new URL(request.url).host).split(",")[0].trim();
-	const p = String(request.headers.get("x-forwarded-proto") || "https").split(",")[0].trim();
-	const b = p + "://" + h;
-	t = t.replace(__VXT, (m, x) => b + "/__x/" + x.toLowerCase());
-	t = t.replace(/(databaseURL\s*:\s*["'`])https?:\/\/[^"'`\/]+\/__x\/([^\/"'`]+)/g, "$1https://$2");
-	if (ct.includes("text/html")) t = t.replace(/(<head(?:\s[^>]*)?>)/i, (m) => m + "<script>" + __VXS + "</script>");
-	return t;
-}
+var UPSTREAM_ORIGIN = "https://vyslo-chat10142245.edgeone.dev";
+var PROXY_PREFIX = "/api/public/embed";
 function rewriteText(body, contentType) {
 	let rewritten = body.replaceAll(UPSTREAM_ORIGIN, PROXY_PREFIX).replaceAll(UPSTREAM_ORIGIN.replaceAll("/", "\\/"), PROXY_PREFIX.replaceAll("/", "\\/"));
 	if (contentType.includes("text/html")) rewritten = rewritten.replace(/(<(?:a|link|script|img|source|video|audio|form)\b[^>]*?\s(?:href|src|action|poster)=["'])\/(?!\/)/gi, `$1${PROXY_PREFIX}/`).replace(/(["'`])\/api\//g, `$1${PROXY_PREFIX}/api/`).replace(/(<head(?:\s[^>]*)?>)/i, `$1<base href="${PROXY_PREFIX}/"><meta name="google" content="notranslate">`).replace(/<html(\s[^>]*)?>/i, (m) => m.includes("translate=") ? m : m.replace(/<html/i, "<html translate=\"no\" class=\"notranslate\""));
 	else if (contentType.includes("text/css")) rewritten = rewritten.replace(/url\(\s*(["']?)\/(?!\/)/gi, `url($1${PROXY_PREFIX}/`);
+	else if (contentType.includes("javascript") || contentType.includes("application/json")) rewritten = rewritten.replace(/(["'`])\/(?!\/|api\/public\/embed\/)/g, `$1${PROXY_PREFIX}/`);
 	return rewritten;
 }
 async function proxyRequest(request, splat = "") {
@@ -212,14 +201,15 @@ async function proxyRequest(request, splat = "") {
 		"accept",
 		"accept-language",
 		"content-type",
-		"range"
+		"range",
+		"if-none-match",
+		"if-modified-since"
 	]) {
 		const value = request.headers.get(name);
 		if (value) headers.set(name, value);
 	}
 	headers.set("referer", `${UPSTREAM_ORIGIN}/`);
 	headers.set("user-agent", request.headers.get("user-agent") ?? "Mozilla/5.0");
-	const ip=request.headers.get("x-forwarded-for")||request.headers.get("x-real-ip");if(ip){headers.set("x-forwarded-for",ip);headers.set("x-real-ip",ip);}
 	const upstream = await fetch(upstreamUrl, {
 		method: request.method,
 		headers,
@@ -234,11 +224,9 @@ async function proxyRequest(request, splat = "") {
 		"x-frame-options",
 		"content-encoding",
 		"content-length",
-		"set-cookie",
-		"etag",
-		"last-modified"
+		"set-cookie"
 	]) responseHeaders.delete(name);
-	responseHeaders.set("cache-control", "no-store, max-age=0");
+	responseHeaders.set("cache-control", "no-cache");
 	const location = upstream.headers.get("location");
 	if (location) {
 		const resolved = new URL(location, upstreamUrl);
@@ -254,7 +242,7 @@ async function proxyRequest(request, splat = "") {
 		headers: responseHeaders
 	});
 	const body = await upstream.text();
-	return new Response(__vx(rewriteText(body, contentType), contentType, request), {
+	return new Response(rewriteText(body, contentType), {
 		status: upstream.status,
 		headers: responseHeaders
 	});

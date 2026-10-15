@@ -12,7 +12,7 @@
    ===================================================================== */
 (function () {
   "use strict";
-  var PRIMARY = "https://mfmikakann-site-vyslo-mix.onrender.com";
+  var PRIMARY = "https://mfmikakann-site-vyslo-mix.up.railway.app";
   var COOKIES = ["vyslo_uid", "vyslo_devkey", "vyslo_hcode"];
   var KEEP = { vyslo_view: 1 };
   var SYNC_EVERY = 30 * 60 * 1000;
@@ -107,7 +107,20 @@
   u.searchParams.set("action", "pull");
   u.searchParams.set("r", location.href);
   u.searchParams.set("n", nonce);
-  location.replace(u.toString());
+  // メイン URL が開けない (削除・ブロックなど) ときは待たずに、この URL のまま使う
+  var moved = false;
+  var giveUp = function () {
+    if (moved) return; moved = true;
+    ssDel(PENDING);
+    try { localStorage.setItem("vyslo_sync_at", String(Date.now() - SYNC_EVERY + 5 * 60 * 1000)); } catch (e) {}
+    show(); done();
+  };
+  var timer = setTimeout(giveUp, 3500);
+  fetch(PRIMARY + "/version", { cache: "no-store", credentials: "omit" })
+    .then(function (r) { return r.json(); })
+    .then(function (v) { if (!v || v.name !== "VYSLO MIX") throw new Error("not vyslo"); })
+    .then(function () { if (moved) return; moved = true; clearTimeout(timer); location.replace(u.toString()); },
+          function () { clearTimeout(timer); giveUp(); });
 })();
 </script>
 <link rel="icon" href="/portal/favicon.ico?v=20261004" sizes="32x32" />
@@ -121,7 +134,7 @@
 <meta name="apple-mobile-web-app-title" content="Google" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Outfit:wght@400;600;700;800;900&display=swap" media="print" onload="this.media='all'" />
 <style>
 :root {
   --bg: #0e0a17;
@@ -153,9 +166,14 @@ body {
 #bar {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   height: 52px;
-  padding: 0 10px;
+  padding: 0 8px;
+  /* どうしても入りきらないときは横にスクロールできるように (ボタンが消えないように) */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+#bar::-webkit-scrollbar { display: none; }
   background: rgba(14, 10, 23, .92);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
@@ -168,9 +186,9 @@ body {
   gap: 8px;
   font-family: Outfit, sans-serif;
   font-weight: 900;
-  font-size: 17px;
-  letter-spacing: .06em;
-  padding: 6px 8px;
+  font-size: 15px;
+  letter-spacing: .04em;
+  padding: 6px 6px;
   border-radius: 10px;
   cursor: pointer;
   user-select: none;
@@ -186,17 +204,17 @@ body {
 .tabbtn {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   height: 36px;
-  padding: 0 14px;
+  padding: 0 11px;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--muted);
   font-family: inherit;
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: .04em;
+  letter-spacing: .02em;
   cursor: pointer;
   transition: all .18s ease;
   white-space: nowrap;
@@ -349,6 +367,11 @@ body {
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+/* 読み込みの進み具合 (2026-10-08) */
+.lprog { width: min(260px, 70vw); height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.lprog i { display: block; height: 100%; width: 0%; border-radius: 3px; background: var(--grad, var(--violet)); transition: width .12s linear; }
+#loadingPct { font-size: 22px; font-weight: 800; letter-spacing: .02em; color: var(--text, #fff); font-variant-numeric: tabular-nums; }
+#loadingStage { font-size: 11.5px; letter-spacing: .04em; color: var(--dim, var(--muted)); min-height: 1.2em; }
 footer {
   position: relative; z-index: 1;
   margin-top: 34px; color: var(--dim); font-size: 11.5px;
@@ -390,9 +413,29 @@ body.embedded #select { padding-top: 28px; }
 body.embedded #select .hero { margin-top: 0; }
 body.embedded .hero h1 { font-size: 26px; }
 body.embedded footer { display: none; }
+/* ---------- 上のバー: 画面が狭いほどコンパクトに (新しいタブボタンが見えるように) ---------- */
+@media (max-width: 1180px) {
+  /* Scratch リンクはアイコンだけに */
+  #bar .scratch-link .tlabel { display: none; }
+  #bar .scratch-link { padding: 0 8px; }
+}
+@media (max-width: 980px) {
+  /* アプリボタンはアイコンだけに (マウスを乗せると名前が出る) */
+  .tabbtn .tlabel { display: none; }
+  .tabbtn { padding: 0 9px; }
+}
+/* フォントや拡大率のせいで入りきらないときは JS が自動で付ける */
+#bar.fit1 .scratch-link .tlabel { display: none; }
+#bar.fit1 .scratch-link { padding: 0 8px; }
+#bar.fit2 .tabbtn .tlabel { display: none; }
+#bar.fit2 .tabbtn { padding: 0 9px; }
+#bar.fit3 #newtab span { display: none; }
+#bar.fit3 .scratch-link { display: none; }
 @media (max-width: 640px) {
   #newtab span { display: none; }
-  .tabbtn { padding: 0 10px; font-size: 12.5px; }
+  .tabbtn { padding: 0 9px; font-size: 12.5px; }
+  #bar .scratch-link { display: none; }
+  #bar .brand { font-size: 13.5px; }
   .cards { grid-template-columns: 1fr; }
   .card { flex-wrap: wrap; gap: 12px; }
   .card .body { flex-basis: 100%; order: 2; }
@@ -450,28 +493,32 @@ body.embedded footer { display: none; }
     </div>
     <button class="tabbtn" data-app="chat" title="VYSLO チャットを開く">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      CHAT
+      <span class="tlabel">CHAT</span>
     </button>
     <button class="tabbtn" data-app="tube" title="VYSLO TUBE を開く">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="4"/></svg>
-      TUBE
+      <span class="tlabel">TUBE</span>
     </button>
     <button class="tabbtn" data-app="music" title="VYSLO MUSIC を開く">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-      MUSIC
+      <span class="tlabel">MUSIC</span>
     </button>
     <button class="tabbtn" data-app="cloudmoon" title="VYSLO CLOUDMOON を開く">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.544-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.152A4 4 0 0 0 17.32 5z"/></svg>
-      CLOUDMOON
+      <span class="tlabel">CLOUDMOON</span>
     </button>
     <button class="tabbtn" data-app="utopia" title="VYSLO UTOPIA を開く">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-      UTOPIA
+      <span class="tlabel">UTOPIA</span>
+    </button>
+    <button class="tabbtn" data-app="talk" title="VYSLO TALK を開く">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="3"/></svg>
+      <span class="tlabel">TALK</span>
     </button>
     <div class="spacer"></div>
     <a class="scratch-link" href="https://scratch.mit.edu/users/MFmikakann/" target="_blank" rel="noopener" title="制作者のScratch">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94"/><path d="M9.69 8h11.48"/><path d="M7.38 12l5.74-9.94"/><path d="M9.69 16L3.95 6.06"/><path d="M14.31 16H2.83"/><path d="M16.62 12l-5.74 9.94"/></svg>
-      Scratch
+      <span class="tlabel">Scratch</span>
     </a>
     <button id="newtab" hidden title="現在のアプリを新しいタブで開く">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
@@ -516,8 +563,13 @@ body.embedded footer { display: none; }
         <span class="body"><span class="tag">LEARN</span><h2>VYSLO UTOPIA</h2><p>教育サイト。学校の科目や学習リソースをまとめて学べる。</p></span>
         <span class="go">開く →</span>
       </button>
+      <button class="card" data-app="talk" style="--c: linear-gradient(135deg, #06b6d4 0%, #4f46e5 100%)">
+        <span class="ic"><img src="/portal/talk-icon.png" alt="" loading="eager" /></span>
+        <span class="body"><span class="tag">CALL</span><h2>VYSLO TALK</h2><p>ビデオ通話。招待リンクを送るだけで、だれとでもすぐ通話をはじめられます。</p></span>
+        <span class="go">開く →</span>
+      </button>
     </div>
-    <footer>VYSLO MIX — CHAT / TUBE / MUSIC / CLOUDMOON / UTOPIA</footer>
+    <footer>VYSLO MIX — CHAT / TUBE / MUSIC / CLOUDMOON / UTOPIA / TALK</footer>
     <a class="scratch-link" href="https://scratch.mit.edu/users/MFmikakann/" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94"/><path d="M9.69 8h11.48"/><path d="M7.38 12l5.74-9.94"/><path d="M9.69 16L3.95 6.06"/><path d="M14.31 16H2.83"/><path d="M16.62 12l-5.74 9.94"/></svg>
       制作者: Scratch
@@ -525,8 +577,8 @@ body.embedded footer { display: none; }
   </main>
 
   <div id="frameWrap">
-    <iframe id="appFrame" title="VYSLO アプリ" allow="camera; microphone; autoplay; clipboard-read; clipboard-write; fullscreen; encrypted-media; picture-in-picture" referrerPolicy="same-origin" src="about:blank"></iframe>
-    <div id="loading"><div class="spinner"></div><span id="loadingLabel">読み込み中…</span></div>
+    <iframe id="appFrame" title="VYSLO アプリ" allow="camera; microphone; display-capture; autoplay; clipboard-read; clipboard-write; fullscreen; encrypted-media; picture-in-picture" referrerPolicy="same-origin" src="about:blank"></iframe>
+    <div id="loading"><div class="spinner"></div><span id="loadingLabel">読み込み中…</span><span id="loadingPct">0%</span><div class="lprog"><i id="loadingBar"></i></div><span id="loadingStage"></span></div>
   </div>
 
 <script>
@@ -538,8 +590,8 @@ body.embedded footer { display: none; }
     new MutationObserver(function () { if (document.title !== TAB_TITLE) document.title = TAB_TITLE; })
       .observe(document.querySelector("title"), { childList: true, characterData: true, subtree: true });
   }
-  var APP_PATHS = { music: "/music/", tube: "/tube/", chat: "/chat/", cloudmoon: "/cloudmoon/", utopia: "/utopia/" };
-  var APP_LABELS = { music: "VYSLO MUSIC", tube: "VYSLO TUBE", chat: "VYSLO CHAT", cloudmoon: "VYSLO CLOUDMOON", utopia: "VYSLO UTOPIA" };
+  var APP_PATHS = { music: "/music/", tube: "/tube/", chat: "/chat/", cloudmoon: "/cloudmoon/", utopia: "/utopia/", talk: "/talk/" };
+  var APP_LABELS = { music: "VYSLO MUSIC", tube: "VYSLO TUBE", chat: "VYSLO CHAT", cloudmoon: "VYSLO CLOUDMOON", utopia: "VYSLO UTOPIA", talk: "VYSLO TALK" };
   var embedded = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
   if (embedded) document.body.classList.add("embedded");
 
@@ -549,6 +601,76 @@ body.embedded footer { display: none; }
   var frame = document.getElementById("appFrame");
   var loading = document.getElementById("loading");
   var loadingLabel = document.getElementById("loadingLabel");
+  // ---- 読み込みの進み具合を % で表示 (2026-10-08) ----
+  //  サーバーへの接続 → ページ本体の受信 → 画像・スクリプト・CSS の読み込み、の
+  //  実際の状態を 50ms ごとに調べて % を出す。読み込みが終わったら 100%。
+  var loadingPct = document.getElementById("loadingPct");
+  var loadingBar = document.getElementById("loadingBar");
+  var loadingStage = document.getElementById("loadingStage");
+  var prog = { timer: null, shown: 0, target: 0, start: 0, oldDoc: null, done: false };
+  function progRender() {
+    var v = prog.done ? 100 : Math.min(99, Math.floor(prog.shown));
+    loadingPct.textContent = v + "%";
+    loadingBar.style.width = v + "%";
+  }
+  function progResources(doc) {
+    var total = 0, ok = 0, names = {};
+    try {
+      doc.defaultView.performance.getEntriesByType("resource").forEach(function (e) { if (e.responseEnd > 0) names[e.name] = 1; });
+    } catch (e) {}
+    try {
+      Array.prototype.forEach.call(doc.querySelectorAll("script[src]"), function (el) { total++; if (names[el.src]) ok++; });
+      Array.prototype.forEach.call(doc.querySelectorAll('link[rel~="stylesheet"][href]'), function (el) { if (el.media === "print") return; total++; if (el.sheet || names[el.href]) ok++; });
+      Array.prototype.forEach.call(doc.images, function (el) { if (!el.currentSrc && !el.src) return; if (el.loading === "lazy") return; total++; if (el.complete) ok++; });
+    } catch (e) {}
+    return { total: total, ok: ok };
+  }
+  function progTick() {
+    var sec = (performance.now() - prog.start) / 1000;
+    var doc = null, t, stage;
+    try { doc = frame.contentDocument; } catch (e) {}
+    var fresh = false;
+    try { fresh = !!doc && doc !== prog.oldDoc && !!doc.URL && doc.URL.indexOf("about:") !== 0 && frame.contentWindow.location.href.indexOf("about:") !== 0; } catch (e) {}
+    if (!fresh) {
+      t = 3 + 27 * (1 - Math.exp(-sec / 1.5));
+      stage = "サーバーに接続中…";
+    } else if (doc.readyState === "loading") {
+      t = Math.max(prog.target, 32) + 1.2;
+      t = Math.min(t, 55);
+      stage = "ページを受信中…";
+    } else {
+      var r = progResources(doc);
+      t = 58 + 41 * (r.total ? r.ok / r.total : 1);
+      stage = r.total ? "画像やデータを読み込み中… (" + r.ok + " / " + r.total + ")" : "表示の準備中…";
+    }
+    if (t > prog.target) prog.target = t;
+    prog.shown += (prog.target - prog.shown) * 0.55;
+    loadingStage.textContent = stage;
+    progRender();
+  }
+  function progStart() {
+    if (prog.timer) clearInterval(prog.timer);
+    prog.shown = 0; prog.target = 0; prog.done = false;
+    prog.start = performance.now();
+    try { prog.oldDoc = frame.contentDocument; } catch (e) { prog.oldDoc = null; }
+    loadingStage.textContent = "サーバーに接続中…";
+    progRender();
+    prog.timer = setInterval(progTick, 50);
+  }
+  function progFinish(cb) {
+    if (prog.timer) { clearInterval(prog.timer); prog.timer = null; }
+    var token = prog.start, from = Math.min(99, prog.shown), t0 = performance.now();
+    loadingStage.textContent = "完了";
+    // 今の % から 100% まで 150ms で進めてから閉じる
+    (function step() {
+      if (token !== prog.start) return;
+      var k = Math.min(1, (performance.now() - t0) / 150);
+      prog.shown = from + (100 - from) * k;
+      if (k >= 1) { prog.done = true; progRender(); setTimeout(function () { if (token === prog.start) cb(); }, 60); return; }
+      progRender();
+      requestAnimationFrame(step);
+    })();
+  }
   var newtab = document.getElementById("newtab");
   // 表示切り替え (サムネイル / リスト)。初期はサムネイル、選択は保存
   var cardsEl = document.querySelector(".cards");
@@ -569,13 +691,29 @@ body.embedded footer { display: none; }
   var fullMode = new URLSearchParams(location.search).get("full") === "1";
   if (!embedded && !fullMode) bar.hidden = false;
 
+  // 上のバーがはみ出したら、段階的に短くする (新しいタブボタンが常に見えるように)
+  function fitBar() {
+    if (bar.hidden) return;
+    bar.classList.remove("fit1", "fit2", "fit3");
+    ["fit1", "fit2", "fit3"].forEach(function (c) {
+      if (bar.scrollWidth > bar.clientWidth + 1) bar.classList.add(c);
+    });
+  }
+  window.addEventListener("resize", fitBar);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBar);
+  setTimeout(fitBar, 0);
+
   function openApp(key, push, innerPath) {
     if (!APP_PATHS[key]) return;
     current = key;
     newtab.hidden = false;
+    fitBar();
     // ゲートウェイは Cookie (vyslo_app) でアプリを切り替えるため、
     // アプリは常にルート "/" で読み込む (アプリ内 SPA ルーターの 404 回避)
-    document.cookie = "vyslo_app=" + key + "; path=/; max-age=31536000; samesite=lax";
+    var appSeq = (openApp.seq = (openApp.seq || 0) + 1);
+    // CHAT は Cookie を使わずに開けるので、Cookie は書き換えない (他のタブのアプリに影響させない)
+    var noCookie = key === "chat";
+    if (!noCookie) document.cookie = "vyslo_app=" + key + "; path=/; max-age=31536000; samesite=lax";
     document.querySelectorAll(".tabbtn").forEach(function (b) {
       b.classList.toggle("active", b.dataset.app === key);
     });
@@ -583,7 +721,21 @@ body.embedded footer { display: none; }
     frameWrap.classList.add("show");
     loadingLabel.textContent = APP_LABELS[key] + " を読み込み中…";
     loading.classList.add("show");
-    frame.src = (innerPath && innerPath.charAt(0) === "/" && innerPath.charAt(1) !== "/") ? innerPath : "/";
+    progStart();
+    var frameSrc = (innerPath && innerPath.charAt(0) === "/" && innerPath.charAt(1) !== "/") ? innerPath : "/";
+    // CHAT は Cookie に関係なく常に CHAT が開く埋め込みパスを直接読み込む
+    // (別タブで他のアプリを開くと Cookie が上書きされ、"/" だと別アプリが開いてしまうため)
+    if (key === "chat" && frameSrc === "/") frameSrc = "/api/public/embed/";
+    // Cookie がサーバーへ届く前に iframe を読み込むと、アプリではなくポータルが
+    // 入れ子で開いてしまうことがあるので、Cookie の保存完了を待ってから読み込む
+    var go = function () { if (appSeq === openApp.seq) frame.src = frameSrc; };
+    try {
+      if (noCookie) { go(); }
+      else if (window.cookieStore && cookieStore.set) {
+        cookieStore.set({ name: "vyslo_app", value: key, path: "/", expires: Date.now() + 31536e6, sameSite: "lax" })
+          .then(go, function () { setTimeout(go, 80); });
+      } else { setTimeout(go, 80); }
+    } catch (e) { setTimeout(go, 80); }
     if (push && window.history && window.history.replaceState) {
       window.history.replaceState(null, "", "/?app=" + key);
     }
@@ -592,17 +744,39 @@ body.embedded footer { display: none; }
   function showSelect() {
     current = null;
     newtab.hidden = true;
+    fitBar();
     document.querySelectorAll(".tabbtn").forEach(function (b) { b.classList.remove("active"); });
     frameWrap.classList.remove("show");
+    if (prog.timer) { clearInterval(prog.timer); prog.timer = null; }
     frame.src = "about:blank";
+    openApp.seq = (openApp.seq || 0) + 1;
     selectView.style.display = "flex";
     if (window.history && window.history.replaceState) {
       window.history.replaceState(null, "", "/");
     }
   }
 
+  // 別タブで別のアプリを開くと Cookie が書き換わるので、このタブを操作したときに
+  // いま開いているアプリへ戻す (CLOUDMOON のページが CHAT 側で 404 になるのを防ぐ)
+  function reassertApp() {
+    if (!current || current === "chat") return;
+    if (document.cookie.indexOf("vyslo_app=" + current) === -1 || !new RegExp("(?:^|; )vyslo_app=" + current + "(?:;|$)").test(document.cookie)) {
+      document.cookie = "vyslo_app=" + current + "; path=/; max-age=31536000; samesite=lax";
+    }
+  }
+  window.addEventListener("focus", reassertApp);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") reassertApp(); });
+  setInterval(function () { if (document.visibilityState === "visible" && document.hasFocus()) reassertApp(); }, 1000);
+
   frame.addEventListener("load", function () {
-    if (frame.src !== "about:blank") loading.classList.remove("show");
+    if (frame.src !== "about:blank" && loading.classList.contains("show")) progFinish(function () { loading.classList.remove("show"); });
+    try {
+      var fd = frame.contentDocument;
+      if (fd && !fd.__vxReassert) {
+        fd.__vxReassert = true;
+        ["pointerdown", "keydown", "touchstart"].forEach(function (ev) { fd.addEventListener(ev, reassertApp, true); });
+      }
+    } catch (e) {}
   });
 
   document.querySelectorAll("[data-app]").forEach(function (el) {
@@ -670,7 +844,7 @@ body.embedded footer { display: none; }
     var fitTimer = w.setInterval(function () { fit(); if (fitUntil && Date.now() > fitUntil) w.clearInterval(fitTimer); }, 200);
 
     f.src = target;
-    f.setAttribute("allow", "autoplay; fullscreen; clipboard-read; clipboard-write; microphone; camera; gamepad; encrypted-media; picture-in-picture");
+    f.setAttribute("allow", "autoplay; fullscreen; clipboard-read; clipboard-write; microphone; camera; display-capture; gamepad; encrypted-media; picture-in-picture");
     f.setAttribute("allowfullscreen", "");
     d.body.appendChild(f);
     try { w.opener = null; } catch (e) {}
@@ -683,7 +857,7 @@ body.embedded footer { display: none; }
       return new Promise(function (res) { var fr = new FileReader(); fr.onload = function () { iconCache[key] = fr.result; res(fr.result); }; fr.onerror = function () { res(null); }; fr.readAsDataURL(b); });
     }).catch(function () { return null; });
   }
-  ["chat", "tube", "music", "cloudmoon", "utopia"].forEach(function (k) { loadIconData(k); });
+  ["chat", "talk", "tube", "music", "cloudmoon", "utopia"].forEach(function (k) { loadIconData(k); });
 
   // アカウント同期が終わってからアプリを開く
   var syncReady = window.__vysloSyncReady || Promise.resolve();

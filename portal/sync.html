@@ -43,8 +43,9 @@
 (function () {
   "use strict";
   var PEERS = [
-    "https://mfmikakann-site-vyslo-mix.onrender.com",
-    "https://mfmikakann-site-vyslo-mix.onrender.com"
+    "https://mfmikakann-site-vyslo-mix.up.railway.app",
+    "https://mfmikakann-site-vyslo-mix-10032028.up.railway.app",
+    "https://mfmikakann-site-vyslo-mix-2.up.railway.app"
   ];
   var COOKIES = ["vyslo_uid", "vyslo_devkey", "vyslo_hcode"];
   var KEEP = { vyslo_view: 1 };
@@ -58,7 +59,9 @@
   try { history.replaceState(null, "", location.pathname); } catch (e) {}
 
   function originOf(u) { try { return new URL(u).origin; } catch (e) { return ""; } }
-  function okPeer(u) { var o = originOf(u); return o && o !== location.origin && PEERS.indexOf(o) !== -1; }
+  // 新しく発行した URL も自動で仲間に入れる (mfmikakann-site … vyslo-mix … .up.railway.app)
+  var PEER_RE = /^https:\/\/mfmikakann-site[a-z0-9-]*vyslo-mix[a-z0-9-]*\.up\.railway\.app$/;
+  function okPeer(u) { var o = originOf(u); return o && o !== location.origin && (PEERS.indexOf(o) !== -1 || PEER_RE.test(o)); }
   function goto(u, key, val) {
     var x = new URL(u);
     x.searchParams.set(key, val);

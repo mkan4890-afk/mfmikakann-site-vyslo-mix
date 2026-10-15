@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const UPSTREAM_ORIGIN = "https://vyslo-mix-chat10041958.edgeone.dev";
+const UPSTREAM_ORIGIN = "https://vyslo-chat10142245.edgeone.dev";
 const PROXY_PREFIX = "/api/public/embed";
 
 function rewriteText(body: string, contentType: string) {
